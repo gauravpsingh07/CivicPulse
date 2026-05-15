@@ -1,4 +1,5 @@
 import { AlertCircle, ShieldCheck } from "lucide-react";
+import { AdminAnalyticsSection } from "@/components/admin/admin-analytics-section";
 import { AdminIssueFilters } from "@/components/admin/admin-issue-filters";
 import { AdminIssueTable } from "@/components/admin/admin-issue-table";
 import { AdminPagination } from "@/components/admin/admin-pagination";
@@ -6,6 +7,7 @@ import { AdminSummaryCards } from "@/components/admin/admin-summary-cards";
 import { RealtimeRefreshPrompt } from "@/components/realtime/realtime-refresh-prompt";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { getAdminAnalyticsDashboard } from "@/lib/admin/analytics";
 import { parseAdminIssueFilters } from "@/lib/admin/filters";
 import { getAdminIssues } from "@/lib/admin/data";
 import { requireAdmin } from "@/lib/auth/profile";
@@ -18,7 +20,10 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const { user, profile } = await requireAdmin("/admin");
   const query = await searchParams;
   const filters = parseAdminIssueFilters(query);
-  const result = await getAdminIssues(filters);
+  const [result, analytics] = await Promise.all([
+    getAdminIssues(filters),
+    getAdminAnalyticsDashboard(),
+  ]);
 
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-[var(--background)] px-5 py-10 sm:px-8">
@@ -44,6 +49,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </section>
 
         <AdminSummaryCards summary={result.summary} />
+        <AdminAnalyticsSection analytics={analytics} />
         <RealtimeRefreshPrompt
           channelName="admin-issues-dashboard"
           description="This admin dashboard listens only while the page is open. New submissions and status changes show a refresh prompt so server-side admin filters and private-note rules stay authoritative."

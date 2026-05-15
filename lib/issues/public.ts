@@ -1,5 +1,6 @@
 import "server-only";
 
+import { getPublicSafeIssueStats } from "@/lib/analytics/calculations";
 import { isAdminProfile } from "@/lib/auth/utils";
 import { getIssueImagePublicUrl } from "@/lib/images";
 import type { PublicIssueFilters } from "@/lib/issues/filters";
@@ -33,6 +34,14 @@ export type PublicIssuesResult = {
 export type PublicMapIssuesResult = {
   isConfigured: boolean;
   issues: PublicIssue[];
+  errorMessage: string | null;
+};
+
+export type PublicIssueStats = {
+  isConfigured: boolean;
+  totalPublicIssues: number;
+  activeCount: number;
+  resolvedCount: number;
   errorMessage: string | null;
 };
 
@@ -163,6 +172,44 @@ export async function getPublicMapIssues(
   return {
     isConfigured: true,
     issues: (data ?? []).map(withImageUrl),
+    errorMessage: null,
+  };
+}
+
+export async function getPublicIssueStats(): Promise<PublicIssueStats> {
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return {
+      isConfigured: false,
+      totalPublicIssues: 0,
+      activeCount: 0,
+      resolvedCount: 0,
+      errorMessage:
+        "Supabase is not configured yet. Public stats will appear after setup.",
+    };
+  }
+
+  const { data, error } = await supabase
+    .from("issues")
+    .select("status")
+    .eq("is_public", true)
+    .neq("status", "rejected")
+    .limit(500);
+
+  if (error) {
+    return {
+      isConfigured: true,
+      totalPublicIssues: 0,
+      activeCount: 0,
+      resolvedCount: 0,
+      errorMessage: error.message,
+    };
+  }
+
+  return {
+    isConfigured: true,
+    ...getPublicSafeIssueStats(data ?? []),
     errorMessage: null,
   };
 }

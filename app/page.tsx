@@ -18,6 +18,7 @@ import {
   ISSUE_STATUSES,
   ISSUE_URGENCY_LEVELS,
 } from "@/lib/constants";
+import { getPublicIssueStats } from "@/lib/issues/public";
 
 const featureCards = [
   {
@@ -79,7 +80,14 @@ const roadmap = [
   "Phase 4+: public views, map, admin, realtime, alerts, analytics",
 ];
 
-export default function Home() {
+export default async function Home() {
+  const publicStats = await getPublicIssueStats();
+  const heroStats = [
+    [publicStats.totalPublicIssues.toString(), "public issues"],
+    [publicStats.activeCount.toString(), "active reports"],
+    [publicStats.resolvedCount.toString(), "resolved/closed"],
+  ];
+
   return (
     <main className="min-h-screen overflow-hidden bg-[var(--background)] text-[var(--foreground)]">
       <section className="relative isolate min-h-[92vh] px-5 py-5 sm:px-8">
@@ -89,7 +97,7 @@ export default function Home() {
           <div className="grid flex-1 items-center gap-12 lg:grid-cols-[1.02fr_0.98fr]">
             <div className="max-w-3xl py-12 lg:py-20">
               <Badge variant="success" className="mb-6">
-                Phase 3 reporting flow ready
+                Analytics and alerts ready
               </Badge>
               <h1 className="max-w-4xl text-5xl font-semibold leading-[1.02] tracking-normal text-balance sm:text-6xl lg:text-7xl">
                 CivicPulse
@@ -117,11 +125,7 @@ export default function Home() {
                 </Link>
               </div>
               <div className="mt-10 grid max-w-xl grid-cols-3 gap-4">
-                {[
-                  ["6", "issue categories"],
-                  ["2 MB", "image cap"],
-                  ["0", "paid APIs"],
-                ].map(([value, label]) => (
+                {heroStats.map(([value, label]) => (
                   <div
                     key={label}
                     className="border-l border-[var(--line)] pl-4"
@@ -305,10 +309,10 @@ export default function Home() {
           <div>
             <div className="flex items-center gap-2 text-sm font-medium text-[#bee5c4]">
               <CheckCircle2 className="size-4" aria-hidden="true" />
-              Phase 3 adds protected report creation.
+              Phase 9 adds admin analytics.
             </div>
             <h2 className="mt-4 text-3xl font-semibold">
-              Ready for the public issue browsing phase.
+              Ready for deployment polish and demo packaging.
             </h2>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">

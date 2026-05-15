@@ -1,6 +1,7 @@
 import "server-only";
 
 import { notFound } from "next/navigation";
+import { calculateAverageResolutionTime } from "@/lib/analytics/calculations";
 import { requireAdmin } from "@/lib/auth/profile";
 import { getIssueImagePublicUrl } from "@/lib/images";
 import type { AdminIssueFilters } from "@/lib/admin/filters";
@@ -32,6 +33,8 @@ export type AdminIssueSummary = {
   inProgressCount: number;
   resolvedOrClosedCount: number;
   highPriorityCount: number;
+  averageResolutionLabel: string;
+  averageResolutionIssueCount: number;
 };
 
 export async function getAdminIssues(
@@ -171,11 +174,13 @@ async function getAdminIssueSummary(): Promise<AdminIssueSummary> {
 
   const { data, error } = await supabase
     .from("issues")
-    .select("status,urgency");
+    .select("status,urgency,created_at,resolved_at");
 
   if (error || !data) {
     return emptySummary;
   }
+
+  const averageResolutionTime = calculateAverageResolutionTime(data);
 
   return {
     openCount: data.filter((issue) => issue.status === "open").length,
@@ -187,6 +192,8 @@ async function getAdminIssueSummary(): Promise<AdminIssueSummary> {
     highPriorityCount: data.filter(
       (issue) => issue.urgency === "high" || issue.urgency === "critical",
     ).length,
+    averageResolutionLabel: averageResolutionTime.label,
+    averageResolutionIssueCount: averageResolutionTime.issueCount,
   };
 }
 
@@ -239,4 +246,6 @@ const emptySummary: AdminIssueSummary = {
   inProgressCount: 0,
   resolvedOrClosedCount: 0,
   highPriorityCount: 0,
+  averageResolutionLabel: "No resolved issues",
+  averageResolutionIssueCount: 0,
 };

@@ -17,6 +17,7 @@ CivicPulse is designed for portfolio-scale usage on free-friendly services. Thes
 - Store image paths or public URLs in PostgreSQL, not image blobs.
 - Paginate public issue lists and admin tables.
 - Keep public browsing queries filtered and limited before rendering cards or detail views.
+- Keep analytics reads column-limited, aggregate where practical, and cap recent activity feeds.
 - Keep public map marker reads capped and avoid clustering or geocoding services until needed.
 - Subscribe to Realtime only on pages that need live updates.
 - Keep Realtime subscriptions page-scoped: `/map`, `/admin`, and selected issue detail pages only.

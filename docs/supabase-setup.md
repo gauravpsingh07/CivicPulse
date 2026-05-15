@@ -99,6 +99,13 @@ Phase 8 behavior:
 - Missing `DISCORD_WEBHOOK_URL` records a skipped notification row and does not block issue creation.
 - Admins can view per-issue notification attempts from `/admin/issues/[id]`; public visitors cannot view notification internals.
 
+Phase 9 behavior:
+
+- `/admin` loads analytics cards, Recharts visualizations, and recent status activity through server-side admin checks.
+- Average resolution time uses `resolved_at - created_at` for resolved and closed issues with a `resolved_at` value.
+- The landing page reads only public, non-rejected issue statuses for aggregate public stats.
+- Public pages do not read private admin notes or notification internals.
+
 ## 4. Create the `issue-images` Storage Bucket
 
 Create a bucket named `issue-images`.
