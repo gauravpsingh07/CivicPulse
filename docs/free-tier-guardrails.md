@@ -19,6 +19,8 @@ CivicPulse is designed for portfolio-scale usage on free-friendly services. Thes
 - Keep public browsing queries filtered and limited before rendering cards or detail views.
 - Keep public map marker reads capped and avoid clustering or geocoding services until needed.
 - Subscribe to Realtime only on pages that need live updates.
+- Keep Realtime subscriptions page-scoped: `/map`, `/admin`, and selected issue detail pages only.
+- Prefer refresh prompts for admin/detail realtime events so server filters, RLS, and role checks stay authoritative.
 - Avoid paid Google Maps, paid geocoding, paid email providers, and paid background jobs.
 - Keep Discord alerts optional so missing webhook configuration never blocks issue creation.
 

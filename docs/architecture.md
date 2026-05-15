@@ -1,6 +1,6 @@
 # CivicPulse Architecture
 
-CivicPulse is planned as a full-stack Next.js App Router application backed by Supabase. Phase 0 created the local scaffolding, typed constants, reusable UI primitives, documentation, and CI workflow. Phase 1 added the SQL schema, RLS policies, seed data, Supabase helper files, manual database types, and Zod validators. Phase 2 added email/password auth actions, profile utilities, proxy session refresh, protected route shells, and role-aware navigation. Phase 3 added authenticated issue submission, an SSR-safe Leaflet map picker, optional Storage image upload, and a server-only Discord notification hook. Phase 4 added public issue list/detail pages, filters, pagination, public comments, status timeline rendering, and a client-only map preview. Phase 5 added the full public Leaflet/OpenStreetMap dashboard with public markers, popups, filters, and map stats. Phase 6 adds server-protected admin moderation, status updates, history ownership, public updates, and private notes. Realtime subscriptions and analytics are intentionally deferred to later phases.
+CivicPulse is planned as a full-stack Next.js App Router application backed by Supabase. Phase 0 created the local scaffolding, typed constants, reusable UI primitives, documentation, and CI workflow. Phase 1 added the SQL schema, RLS policies, seed data, Supabase helper files, manual database types, and Zod validators. Phase 2 added email/password auth actions, profile utilities, proxy session refresh, protected route shells, and role-aware navigation. Phase 3 added authenticated issue submission, an SSR-safe Leaflet map picker, optional Storage image upload, and a server-only Discord notification hook. Phase 4 added public issue list/detail pages, filters, pagination, public comments, status timeline rendering, and a client-only map preview. Phase 5 added the full public Leaflet/OpenStreetMap dashboard with public markers, popups, filters, and map stats. Phase 6 added server-protected admin moderation, status updates, history ownership, public updates, and private notes. Phase 7 adds page-scoped Supabase Realtime for the public map, admin dashboard, and selected issue detail pages. Analytics are intentionally deferred to a later phase.
 
 ## Target System
 
@@ -26,6 +26,9 @@ Leaflet and OpenStreetMap provide the public map and map picker without Google M
 - Public map reads are filtered server-side and capped before rendering markers.
 - Protected routes use server-side checks, not client navigation state, before rendering dashboard/admin/report shells.
 - Admin data reads and mutations re-check `profiles.role = admin` server-side before returning all issues or private notes.
+- Realtime subscriptions are mounted only inside selected client components and are cleaned up on unmount.
+- Missing public Supabase env vars disable realtime indicators instead of crashing the app.
+- Public realtime handlers never use service-role credentials and re-apply public visibility rules before rendering issue markers.
 
 ## Planned Data Flow
 
@@ -38,12 +41,13 @@ Leaflet and OpenStreetMap provide the public map and map picker without Google M
 7. Admin comments are split between public updates and private notes with `issue_comments.is_public`.
 8. High or critical urgency reports can trigger a Discord webhook and log notification status.
 9. Map, admin, and detail pages subscribe to relevant Supabase Realtime changes only while mounted.
+10. The public map merges public issue changes client-side, while admin and detail pages prompt a server refresh so route guards and RLS remain authoritative.
 
 ## Repository Shape
 
 - `app/` - App Router pages and route handlers.
 - `components/` - reusable layout, issue, map, admin, analytics, and UI components.
-- `lib/` - shared utilities, constants, validators, Supabase helpers, and actions.
+- `lib/` - shared utilities, constants, validators, Supabase helpers, realtime helpers, and actions.
 - `supabase/migrations/` - SQL migrations for schema, RLS, and seed data.
 - `tests/` - unit and component tests.
 - `.github/workflows/` - CI validation.

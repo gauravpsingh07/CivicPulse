@@ -10,6 +10,7 @@ import {
 import { AdminCommentForm } from "@/components/admin/admin-comment-form";
 import { StatusUpdateDialog } from "@/components/admin/status-update-dialog";
 import { CommentList } from "@/components/issues/comment-list";
+import { RealtimeRefreshPrompt } from "@/components/realtime/realtime-refresh-prompt";
 import {
   IssueStatusBadge,
   IssueUrgencyBadge,
@@ -46,6 +47,13 @@ export default async function AdminIssuePage({ params }: AdminIssuePageProps) {
         >
           Back to admin dashboard
         </Link>
+
+        <RealtimeRefreshPrompt
+          channelName={`admin-issue-${issue.id}`}
+          description="This moderation page listens for issue, timeline, and comment changes only while it is open. Refreshing reloads through the server-side admin guard."
+          issueId={issue.id}
+          mode="issue-detail"
+        />
 
         <section className="grid gap-8 xl:grid-cols-[1.08fr_0.92fr]">
           <div className="space-y-6">

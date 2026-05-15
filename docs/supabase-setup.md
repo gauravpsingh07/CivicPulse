@@ -76,6 +76,22 @@ Phase 6 behavior:
 - The status update action sets `resolved_at` when moving to resolved/closed, clears it when reopening to open/in-progress, and preserves it for duplicate/rejected.
 - Public admin updates use `issue_comments.is_public = true`; private notes use `is_public = false`.
 
+Phase 7 behavior:
+
+- `/map` subscribes to issue changes only while the public map is mounted and re-applies public visibility, status, category, and urgency filters before rendering markers.
+- `/admin` subscribes to issue changes only while the admin dashboard is open and shows a refresh prompt so server-side admin guards remain authoritative.
+- `/issues/[id]` and `/admin/issues/[id]` subscribe only to the selected issue, its status history, and its comments, then refresh through server-side visibility rules.
+- Missing public Supabase env vars show a disabled realtime indicator instead of breaking local builds.
+
+Realtime setup:
+
+1. In the Supabase dashboard, open Database > Publications.
+2. Enable Realtime for:
+   - `public.issues`
+   - `public.issue_status_history`
+   - `public.issue_comments`
+3. Keep RLS enabled. Public clients rely on the existing policies so private admin notes are not visible to normal users.
+
 ## 4. Create the `issue-images` Storage Bucket
 
 Create a bucket named `issue-images`.

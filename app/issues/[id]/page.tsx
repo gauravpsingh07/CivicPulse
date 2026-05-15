@@ -10,6 +10,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { CommentList } from "@/components/issues/comment-list";
+import { RealtimeRefreshPrompt } from "@/components/realtime/realtime-refresh-prompt";
 import {
   IssueStatusBadge,
   IssueUrgencyBadge,
@@ -58,6 +59,13 @@ export default async function IssueDetailPage({
         >
           Back to public issues
         </Link>
+
+        <RealtimeRefreshPrompt
+          channelName={`public-issue-${issue.id}`}
+          description="This public detail page listens only for this issue. Refreshing reloads through server-side visibility rules so private notes stay hidden."
+          issueId={issue.id}
+          mode="issue-detail"
+        />
 
         <section className="grid gap-8 lg:grid-cols-[1.04fr_0.96fr]">
           <div className="space-y-6">

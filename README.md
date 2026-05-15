@@ -2,7 +2,7 @@
 
 CivicPulse is a portfolio-grade civic reporting platform for community issues such as potholes, broken streetlights, fallen trees, unsafe sidewalks, water leaks, trash overflow, and accessibility problems.
 
-This repository is currently at **Phase 6**: project scaffold, shared UI, docs, CI, Supabase SQL migrations, RLS policies, seed data, safe Supabase helpers, manual database types, Zod validators, Supabase Auth, protected routes, authenticated issue submission, public browsing/map views, and server-protected admin moderation.
+This repository is currently at **Phase 7**: project scaffold, shared UI, docs, CI, Supabase SQL migrations, RLS policies, seed data, safe Supabase helpers, manual database types, Zod validators, Supabase Auth, protected routes, authenticated issue submission, public browsing/map views, server-protected admin moderation, and page-scoped Supabase Realtime updates.
 
 ## Problem
 
@@ -43,7 +43,7 @@ CivicPulse will combine map-selected reports, public tracking, authenticated das
 - [x] Public issue list, detail pages, filters, status badges, and timeline
 - [x] Leaflet public map with OpenStreetMap attribution
 - [x] Admin dashboard, status updates, history, and moderation workflow
-- [ ] Supabase Realtime updates for map, admin, and issue detail pages
+- [x] Supabase Realtime updates for map, admin, and issue detail pages
 - [ ] Discord alert workflow for high and critical reports
 - [ ] Analytics cards and charts
 - [ ] Deployment docs, demo script, screenshots, and resume bullets
@@ -87,9 +87,10 @@ The current local demo flow can show:
 7. Open `/map` to view public, non-rejected issues as status/urgency styled markers with popups and filters.
 8. Open `/admin` as an admin to filter the moderation queue and view summary cards.
 9. Open `/admin/issues/[id]` to update status, write status history, post public updates, and save private admin notes.
-10. Trigger a skipped, sent, or failed notification record for high and critical reports.
+10. Watch `/map` update public markers while the page is open, or use the refresh prompts on `/admin` and `/issues/[id]` after live changes.
+11. Trigger a skipped, sent, or failed notification record for high and critical reports.
 
-Later phases add realtime updates and analytics.
+Later phases add analytics and final deployment polish.
 
 ## Validation
 
@@ -124,6 +125,8 @@ The GitHub Actions workflow runs the same validation commands on push and pull r
 - Marker color reflects status; high and critical urgency markers receive stronger emphasis.
 - Popups show title, category, status, urgency, created date, and a detail-page link.
 - Map reads are capped for free-tier safety and use OpenStreetMap attribution.
+- While `/map` is open, a page-scoped Realtime subscription merges issue inserts, updates, and deletes into the visible marker set.
+- Realtime marker updates re-apply public visibility, status, category, and urgency rules before rendering.
 
 ## Admin Moderation Flow
 
@@ -134,6 +137,15 @@ The GitHub Actions workflow runs the same validation commands on push and pull r
 - Status updates run through a server action that re-checks admin role before updating `issues`.
 - The reopen rule is explicit: resolved/closed sets `resolved_at`; open/in-progress clears it; duplicate/rejected preserve it.
 - Public updates are visible on public detail pages; private admin notes stay admin-only.
+- `/admin` and issue detail pages use scoped Realtime refresh prompts rather than global subscriptions, so server-side role checks remain authoritative after refresh.
+
+## Realtime Behavior
+
+- The browser helper uses only `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+- Missing Supabase env vars show a disabled realtime indicator instead of crashing or blocking builds.
+- `/map` subscribes only while the map component is mounted and only renders public, non-rejected markers.
+- `/admin` listens for issue table changes while the dashboard is open and prompts admins to refresh through the server-protected route.
+- `/issues/[id]` and `/admin/issues/[id]` listen only for the selected issue, status history, and comments, then refresh through server-side visibility rules.
 
 ## Screenshot Checklist
 
@@ -144,7 +156,8 @@ Screenshots are not committed yet. Capture these after the app is connected to S
 - `issue-list.png`
 - `issue-detail.png`
 - `public-map.png`
-- `admin-dashboard.png` after Phase 6
+- `admin-dashboard.png`
+- `realtime-refresh.png` after Phase 7
 - `analytics.png` after Phase 9
 - `discord-alert.png` when the optional webhook is configured
 
