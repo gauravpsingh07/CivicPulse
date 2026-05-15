@@ -322,8 +322,9 @@ export default async function Home() {
               className={buttonVariants({
                 variant: "light",
                 className:
-                  "text-[#173425] hover:text-[#173425] focus-visible:outline-white",
+                  "!bg-white !text-[#173425] hover:!bg-[#eef6e9] hover:!text-[#173425] focus-visible:outline-white",
               })}
+              style={{ color: "#173425" }}
             >
               Report an issue
             </Link>
