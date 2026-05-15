@@ -4,6 +4,10 @@ import { isAdminProfile } from "@/lib/auth/utils";
 import { getIssueImagePublicUrl } from "@/lib/images";
 import type { PublicIssueFilters } from "@/lib/issues/filters";
 import { isPubliclyVisibleIssueStatus } from "@/lib/issues/status";
+import {
+  PUBLIC_MAP_ISSUE_LIMIT,
+  type PublicMapFilters,
+} from "@/lib/map/markers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Tables } from "@/lib/types/database";
 
@@ -23,6 +27,12 @@ export type PublicIssuesResult = {
   issues: PublicIssue[];
   totalCount: number;
   pageCount: number;
+  errorMessage: string | null;
+};
+
+export type PublicMapIssuesResult = {
+  isConfigured: boolean;
+  issues: PublicIssue[];
   errorMessage: string | null;
 };
 
@@ -102,6 +112,57 @@ export async function getPublicIssues(
     issues: (data ?? []).map(withImageUrl),
     totalCount,
     pageCount: Math.ceil(totalCount / filters.pageSize),
+    errorMessage: null,
+  };
+}
+
+export async function getPublicMapIssues(
+  filters: PublicMapFilters,
+): Promise<PublicMapIssuesResult> {
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return {
+      isConfigured: false,
+      issues: [],
+      errorMessage:
+        "Supabase is not configured yet. Add the public URL and anon key to browse live map data.",
+    };
+  }
+
+  let query = supabase
+    .from("issues")
+    .select("*")
+    .eq("is_public", true)
+    .neq("status", "rejected");
+
+  if (filters.status) {
+    query = query.eq("status", filters.status);
+  }
+
+  if (filters.category) {
+    query = query.eq("category", filters.category);
+  }
+
+  if (filters.urgency) {
+    query = query.eq("urgency", filters.urgency);
+  }
+
+  const { data, error } = await query
+    .order("created_at", { ascending: false })
+    .limit(PUBLIC_MAP_ISSUE_LIMIT);
+
+  if (error) {
+    return {
+      isConfigured: true,
+      issues: [],
+      errorMessage: error.message,
+    };
+  }
+
+  return {
+    isConfigured: true,
+    issues: (data ?? []).map(withImageUrl),
     errorMessage: null,
   };
 }

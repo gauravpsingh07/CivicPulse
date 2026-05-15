@@ -2,7 +2,7 @@
 
 CivicPulse is a portfolio-grade civic reporting platform for community issues such as potholes, broken streetlights, fallen trees, unsafe sidewalks, water leaks, trash overflow, and accessibility problems.
 
-This repository is currently at **Phase 4**: project scaffold, shared UI, docs, CI, Supabase SQL migrations, RLS policies, seed data, safe Supabase helpers, manual database types, Zod validators, Supabase Auth, protected routes, authenticated issue submission, and public issue browsing with filters, detail pages, timelines, comments, and map previews.
+This repository is currently at **Phase 5**: project scaffold, shared UI, docs, CI, Supabase SQL migrations, RLS policies, seed data, safe Supabase helpers, manual database types, Zod validators, Supabase Auth, protected routes, authenticated issue submission, public issue browsing, and a full public Leaflet/OpenStreetMap dashboard.
 
 ## Problem
 
@@ -41,7 +41,7 @@ CivicPulse will combine map-selected reports, public tracking, authenticated das
 - [x] Supabase Auth login/register/logout and protected dashboard
 - [x] Issue report form with validation, map picker, and image upload guardrails
 - [x] Public issue list, detail pages, filters, status badges, and timeline
-- [ ] Leaflet public map with OpenStreetMap attribution
+- [x] Leaflet public map with OpenStreetMap attribution
 - [ ] Admin dashboard, status updates, history, and moderation workflow
 - [ ] Supabase Realtime updates for map, admin, and issue detail pages
 - [ ] Discord alert workflow for high and critical reports
@@ -84,9 +84,10 @@ The current local demo flow can show:
 4. Redirect to the `/issues/[id]` detail page after successful creation.
 5. Browse `/issues` with status, category, urgency, date sort, and pagination controls.
 6. Open an issue detail page to view the image, public status timeline, public comments/updates, location metadata, and Leaflet map preview.
-7. Trigger a skipped, sent, or failed notification record for high and critical reports.
+7. Open `/map` to view public, non-rejected issues as status/urgency styled markers with popups and filters.
+8. Trigger a skipped, sent, or failed notification record for high and critical reports.
 
-Later phases add the full public map dashboard, realtime updates, admin workflows, and analytics.
+Later phases add realtime updates, admin workflows, and analytics.
 
 ## Validation
 
@@ -113,6 +114,27 @@ The GitHub Actions workflow runs the same validation commands on push and pull r
 - `/issues/[id]` enforces visibility on the server before rendering details.
 - Public visitors see only public comments and status history for visible issues.
 - Private admin notes are not shown to normal users.
+
+## Public Map Flow
+
+- `/map` fetches only public, non-rejected issues from Supabase.
+- Filters support status, category, and urgency.
+- Marker color reflects status; high and critical urgency markers receive stronger emphasis.
+- Popups show title, category, status, urgency, created date, and a detail-page link.
+- Map reads are capped for free-tier safety and use OpenStreetMap attribution.
+
+## Screenshot Checklist
+
+Screenshots are not committed yet. Capture these after the app is connected to Supabase seed/demo data:
+
+- `landing.png`
+- `new-report.png`
+- `issue-list.png`
+- `issue-detail.png`
+- `public-map.png`
+- `admin-dashboard.png` after Phase 6
+- `analytics.png` after Phase 9
+- `discord-alert.png` when the optional webhook is configured
 
 ## Environment Variables
 

@@ -1,6 +1,6 @@
 # CivicPulse Architecture
 
-CivicPulse is planned as a full-stack Next.js App Router application backed by Supabase. Phase 0 created the local scaffolding, typed constants, reusable UI primitives, documentation, and CI workflow. Phase 1 added the SQL schema, RLS policies, seed data, Supabase helper files, manual database types, and Zod validators. Phase 2 added email/password auth actions, profile utilities, proxy session refresh, protected route shells, and role-aware navigation. Phase 3 added authenticated issue submission, an SSR-safe Leaflet map picker, optional Storage image upload, and a server-only Discord notification hook. Phase 4 adds public issue list/detail pages, filters, pagination, public comments, status timeline rendering, and a client-only map preview. Realtime subscriptions and full admin workflows are intentionally deferred to later phases.
+CivicPulse is planned as a full-stack Next.js App Router application backed by Supabase. Phase 0 created the local scaffolding, typed constants, reusable UI primitives, documentation, and CI workflow. Phase 1 added the SQL schema, RLS policies, seed data, Supabase helper files, manual database types, and Zod validators. Phase 2 added email/password auth actions, profile utilities, proxy session refresh, protected route shells, and role-aware navigation. Phase 3 added authenticated issue submission, an SSR-safe Leaflet map picker, optional Storage image upload, and a server-only Discord notification hook. Phase 4 added public issue list/detail pages, filters, pagination, public comments, status timeline rendering, and a client-only map preview. Phase 5 adds the full public Leaflet/OpenStreetMap dashboard with public markers, popups, filters, and map stats. Realtime subscriptions and full admin workflows are intentionally deferred to later phases.
 
 ## Target System
 
@@ -21,8 +21,9 @@ Leaflet and OpenStreetMap provide the public map and map picker without Google M
 - No Supabase project is required for the app to build.
 - Browser helper code only reads `NEXT_PUBLIC_*` Supabase values.
 - Service-role and webhook secrets are referenced only from server-only helper code.
-- Leaflet is mounted only through client-only dynamic imports for the report map picker and issue detail map preview.
+- Leaflet is mounted only through client-only dynamic imports for the report map picker, issue detail map preview, and full public map.
 - Public issue browsing is server-rendered and enforces `is_public = true` plus non-rejected visibility before showing public data.
+- Public map reads are filtered server-side and capped before rendering markers.
 - Protected routes use server-side checks, not client navigation state, before rendering dashboard/admin/report shells.
 
 ## Planned Data Flow
@@ -31,9 +32,10 @@ Leaflet and OpenStreetMap provide the public map and map picker without Google M
 2. Server-side logic verifies the session and writes to Supabase under RLS protection.
 3. Images are uploaded to the `issue-images` bucket with a user and issue scoped path.
 4. Public pages read approved public issues with filters and pagination.
-5. Admin actions verify role server-side before updating status and writing history.
-6. High or critical urgency reports can trigger a Discord webhook and log notification status.
-7. Map, admin, and detail pages subscribe to relevant Supabase Realtime changes only while mounted.
+5. The public map reads approved public issues with a small capped query and renders Leaflet markers client-side.
+6. Admin actions verify role server-side before updating status and writing history.
+7. High or critical urgency reports can trigger a Discord webhook and log notification status.
+8. Map, admin, and detail pages subscribe to relevant Supabase Realtime changes only while mounted.
 
 ## Repository Shape
 

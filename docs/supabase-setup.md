@@ -60,6 +60,13 @@ Phase 4 behavior:
 - Public issue details show status history and only public comments for normal visitors.
 - Admin/private comments remain hidden from normal users.
 
+Phase 5 behavior:
+
+- `/map` reads public issues with `is_public = true` and `status <> rejected`.
+- Public map filters support status, category, and urgency.
+- Map marker queries are capped for free-tier usage.
+- Leaflet renders public markers in the browser only; Supabase credentials are not required for build.
+
 ## 4. Create the `issue-images` Storage Bucket
 
 Create a bucket named `issue-images`.
