@@ -1,6 +1,7 @@
 import {
   ACCEPTED_IMAGE_TYPES,
   IMAGE_UPLOAD_LIMIT_BYTES,
+  ISSUE_IMAGES_BUCKET,
 } from "@/lib/constants";
 
 export type ImageFileLike = {
@@ -97,4 +98,20 @@ export function buildIssueImagePath({
   timestamp?: number;
 }) {
   return `${userId}/${issueId}/${timestamp}_${sanitizeImageFileName(fileName)}`;
+}
+
+export function getIssueImagePublicUrl(imagePath: string | null | undefined) {
+  if (!imagePath) {
+    return null;
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  if (!supabaseUrl) {
+    return null;
+  }
+
+  const encodedPath = imagePath.split("/").map(encodeURIComponent).join("/");
+
+  return `${supabaseUrl.replace(/\/$/, "")}/storage/v1/object/public/${ISSUE_IMAGES_BUCKET}/${encodedPath}`;
 }

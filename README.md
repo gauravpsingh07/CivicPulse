@@ -2,7 +2,7 @@
 
 CivicPulse is a portfolio-grade civic reporting platform for community issues such as potholes, broken streetlights, fallen trees, unsafe sidewalks, water leaks, trash overflow, and accessibility problems.
 
-This repository is currently at **Phase 3**: project scaffold, shared UI, docs, CI, Supabase SQL migrations, RLS policies, seed data, safe Supabase helpers, manual database types, Zod validators, Supabase Auth, protected routes, and authenticated issue submission with a Leaflet map picker, optional image upload, and Discord notification hook.
+This repository is currently at **Phase 4**: project scaffold, shared UI, docs, CI, Supabase SQL migrations, RLS policies, seed data, safe Supabase helpers, manual database types, Zod validators, Supabase Auth, protected routes, authenticated issue submission, and public issue browsing with filters, detail pages, timelines, comments, and map previews.
 
 ## Problem
 
@@ -40,7 +40,7 @@ CivicPulse will combine map-selected reports, public tracking, authenticated das
 - [x] Supabase schema, RLS policies, storage bucket notes, and seed data
 - [x] Supabase Auth login/register/logout and protected dashboard
 - [x] Issue report form with validation, map picker, and image upload guardrails
-- [ ] Public issue list, detail pages, filters, status badges, and timeline
+- [x] Public issue list, detail pages, filters, status badges, and timeline
 - [ ] Leaflet public map with OpenStreetMap attribution
 - [ ] Admin dashboard, status updates, history, and moderation workflow
 - [ ] Supabase Realtime updates for map, admin, and issue detail pages
@@ -81,10 +81,12 @@ The current local demo flow can show:
 1. Open the landing page.
 2. Register or log in.
 3. Create an issue from `/issues/new` with title, description, category, urgency, optional address label, optional image, and map-selected coordinates.
-4. Redirect to the `/issues/[id]` placeholder shell after successful creation.
-5. Trigger a skipped, sent, or failed notification record for high and critical reports.
+4. Redirect to the `/issues/[id]` detail page after successful creation.
+5. Browse `/issues` with status, category, urgency, date sort, and pagination controls.
+6. Open an issue detail page to view the image, public status timeline, public comments/updates, location metadata, and Leaflet map preview.
+7. Trigger a skipped, sent, or failed notification record for high and critical reports.
 
-Later phases add public issue browsing, full issue details, realtime updates, admin workflows, and analytics.
+Later phases add the full public map dashboard, realtime updates, admin workflows, and analytics.
 
 ## Validation
 
@@ -102,6 +104,15 @@ The GitHub Actions workflow runs the same validation commands on push and pull r
 - `docs/architecture.md` explains the target architecture and Phase 0 boundaries.
 - `docs/free-tier-guardrails.md` records the cost-control rules from the source-of-truth plan.
 - `docs/supabase-setup.md` explains how to run migrations, configure Auth, create the `issue-images` bucket, and promote an admin user.
+
+## Public Browsing Flow
+
+- `/issues` fetches only public, non-rejected issues from Supabase.
+- Filters support status, category, urgency, and newest/oldest date sorting.
+- Pagination limits reads so the public page stays free-tier friendly.
+- `/issues/[id]` enforces visibility on the server before rendering details.
+- Public visitors see only public comments and status history for visible issues.
+- Private admin notes are not shown to normal users.
 
 ## Environment Variables
 

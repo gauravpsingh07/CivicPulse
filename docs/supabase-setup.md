@@ -51,6 +51,15 @@ Phase 3 behavior:
 - High and critical urgency reports call the server-only Discord helper.
 - Missing `DISCORD_WEBHOOK_URL` records a skipped alert attempt when the notification insert policy is installed.
 
+Phase 4 behavior:
+
+- `/issues` reads public issues with `is_public = true` and `status <> rejected`.
+- Public list filters support status, category, urgency, and newest/oldest date sort.
+- Pagination limits public reads to a small page size.
+- `/issues/[id]` re-checks visibility server-side before rendering detail data.
+- Public issue details show status history and only public comments for normal visitors.
+- Admin/private comments remain hidden from normal users.
+
 ## 4. Create the `issue-images` Storage Bucket
 
 Create a bucket named `issue-images`.

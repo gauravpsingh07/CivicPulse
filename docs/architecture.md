@@ -1,6 +1,6 @@
 # CivicPulse Architecture
 
-CivicPulse is planned as a full-stack Next.js App Router application backed by Supabase. Phase 0 created the local scaffolding, typed constants, reusable UI primitives, documentation, and CI workflow. Phase 1 added the SQL schema, RLS policies, seed data, Supabase helper files, manual database types, and Zod validators. Phase 2 added email/password auth actions, profile utilities, proxy session refresh, protected route shells, and role-aware navigation. Phase 3 adds authenticated issue submission, an SSR-safe Leaflet map picker, optional Storage image upload, and a server-only Discord notification hook. Public browsing, realtime subscriptions, and full admin workflows are intentionally deferred to later phases.
+CivicPulse is planned as a full-stack Next.js App Router application backed by Supabase. Phase 0 created the local scaffolding, typed constants, reusable UI primitives, documentation, and CI workflow. Phase 1 added the SQL schema, RLS policies, seed data, Supabase helper files, manual database types, and Zod validators. Phase 2 added email/password auth actions, profile utilities, proxy session refresh, protected route shells, and role-aware navigation. Phase 3 added authenticated issue submission, an SSR-safe Leaflet map picker, optional Storage image upload, and a server-only Discord notification hook. Phase 4 adds public issue list/detail pages, filters, pagination, public comments, status timeline rendering, and a client-only map preview. Realtime subscriptions and full admin workflows are intentionally deferred to later phases.
 
 ## Target System
 
@@ -21,8 +21,8 @@ Leaflet and OpenStreetMap provide the public map and map picker without Google M
 - No Supabase project is required for the app to build.
 - Browser helper code only reads `NEXT_PUBLIC_*` Supabase values.
 - Service-role and webhook secrets are referenced only from server-only helper code.
-- Leaflet is mounted only through a client-only dynamic import for the report map picker.
-- Placeholder routes keep navigation testable without pretending later features are complete.
+- Leaflet is mounted only through client-only dynamic imports for the report map picker and issue detail map preview.
+- Public issue browsing is server-rendered and enforces `is_public = true` plus non-rejected visibility before showing public data.
 - Protected routes use server-side checks, not client navigation state, before rendering dashboard/admin/report shells.
 
 ## Planned Data Flow
