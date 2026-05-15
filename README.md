@@ -1,100 +1,209 @@
-# CivicPulse | Full-Stack Geospatial Issue Reporting Platform
+# CivicPulse
 
-CivicPulse is a portfolio-grade civic reporting platform for community issues such as potholes, broken streetlights, fallen trees, unsafe sidewalks, water leaks, trash overflow, and accessibility problems.
-
-This repository is currently at **Phase 10**: project scaffold, shared UI, docs, CI, Supabase SQL migrations, RLS policies, seed data, safe Supabase helpers, manual database types, Zod validators, Supabase Auth, protected routes, authenticated issue submission, public browsing/map views, server-protected admin moderation, page-scoped Supabase Realtime updates, server-only Discord alert logging, admin analytics, and hardened loading/error/accessibility states.
+Full-stack geospatial community issue reporting platform built with Next.js, TypeScript, Supabase, PostgreSQL, Leaflet, OpenStreetMap, Recharts, and Vercel-ready tooling.
 
 ## Problem
 
-Local issue reporting is often scattered across phone calls, forms, and disconnected status updates. Residents need a simple way to report problems with location context, while admins need a structured workflow for triage and public transparency.
+Local issue reporting is often scattered across phone calls, one-off forms, and disconnected status updates. Residents need a simple way to report civic problems with location context, while admins need a secure workflow for triage, public updates, history, analytics, and urgent alerts.
 
 ## Solution
 
-CivicPulse will combine map-selected reports, public tracking, authenticated dashboards, admin moderation, realtime updates, image storage, analytics, and high-priority alerts using free-tier-friendly services.
+CivicPulse lets authenticated users submit public civic reports with a title, description, category, urgency, optional image, and map-selected latitude/longitude. Public visitors can browse visible issues on a list and map. Admins can moderate every issue, update status, add public updates or private notes, view notification logs, and monitor analytics.
+
+## Live Demo
+
+Live demo: not deployed yet. Add the deployed Vercel URL here after production setup is complete.
+
+GitHub repository: add the public repository URL here if this README is copied outside the repo.
+
+## Features
+
+- Email/password authentication with Supabase Auth.
+- Protected issue submission at `/issues/new`.
+- Zod validation for auth, issue fields, filters, coordinates, and images.
+- Optional issue image upload to Supabase Storage with JPEG, PNG, WebP, and 2 MB limits.
+- Public issue list with status, category, urgency, date sort, and pagination.
+- Public issue detail pages with image, status timeline, public comments, metadata, and Leaflet map preview.
+- Public `/map` with Leaflet, OpenStreetMap attribution, filters, marker popups, marker styling, stats, and scoped Realtime updates.
+- Server-protected `/admin` dashboard with moderation queue, filters, pagination, analytics cards, Recharts visualizations, and recent activity.
+- Admin issue detail with reporter info, status history, public comments, private notes, notification logs, map preview, and status update dialog.
+- Server-side admin actions for status updates and comments.
+- Discord webhook alert workflow for high and critical issues.
+- Supabase Realtime refresh prompts for admin/detail pages and live marker updates for the public map.
+- Health route at `/api/health` that returns basic app/public-env readiness without exposing secrets.
+- Loading, empty, missing-env, unauthorized, and not-found states for major flows.
+- GitHub Actions CI for lint, typecheck, tests, and build.
 
 ## Tech Stack
 
-- Next.js App Router with TypeScript
-- Tailwind CSS with shadcn/ui-inspired local components
-- Supabase Auth, PostgreSQL, Storage, Realtime, and RLS
-- Leaflet and OpenStreetMap
-- Zod validation
-- Recharts analytics
-- Vitest, React Testing Library, and jsdom
-- GitHub Actions CI
-- Vercel deployment readiness
-- Discord webhook notifications
+- **Frontend:** Next.js App Router, React, TypeScript, Tailwind CSS, local shadcn/ui-style primitives
+- **Backend:** Next.js Server Actions and Route Handlers
+- **Database:** Supabase PostgreSQL with SQL migrations and RLS policies
+- **Auth:** Supabase Auth
+- **Storage:** Supabase Storage
+- **Realtime:** Supabase Realtime
+- **Maps:** Leaflet, react-leaflet, OpenStreetMap tiles
+- **Validation:** Zod
+- **Charts:** Recharts
+- **Testing:** Vitest, React Testing Library, jsdom
+- **CI/CD:** GitHub Actions, Vercel-ready build
+- **Notifications:** Discord webhook
 
-## Free-Tier Strategy
+## Architecture Overview
 
-- Use OpenStreetMap instead of paid map APIs.
-- Cap image uploads at 2 MB and allow only JPEG, PNG, and WebP.
-- Store image paths in PostgreSQL instead of image blobs.
-- Use pagination or limits for growing issue lists.
-- Subscribe to Supabase Realtime only on pages that need live updates.
-- Keep high-priority alerts on Discord webhooks instead of paid email services.
+CivicPulse uses Next.js App Router for public pages, protected pages, server-rendered data fetching, and server actions. Supabase provides Auth, PostgreSQL, Storage, and Realtime. Browser code uses only `NEXT_PUBLIC_*` Supabase values. Server-only helpers read optional server secrets such as `DISCORD_WEBHOOK_URL` and `SUPABASE_SERVICE_ROLE_KEY`, and those values are never required for the app to build.
 
-## Planned Feature Checklist
+Core routes:
 
-- [x] Phase 0 project scaffold, UI foundation, docs, CI, and tests
-- [x] Supabase schema, RLS policies, storage bucket notes, and seed data
-- [x] Supabase Auth login/register/logout and protected dashboard
-- [x] Issue report form with validation, map picker, and image upload guardrails
-- [x] Public issue list, detail pages, filters, status badges, and timeline
-- [x] Leaflet public map with OpenStreetMap attribution
-- [x] Admin dashboard, status updates, history, and moderation workflow
-- [x] Supabase Realtime updates for map, admin, and issue detail pages
-- [x] Discord alert workflow for high and critical reports
-- [x] Analytics cards and charts
-- [x] Testing, error states, accessibility, mobile polish, and hardening
-- [ ] Deployment docs, demo script, screenshots, and resume bullets
+- `/` - landing page with public-safe aggregate stats.
+- `/login` and `/register` - Supabase Auth forms.
+- `/dashboard` - authenticated user entry point.
+- `/issues` - public issue list.
+- `/issues/[id]` - public issue detail with visibility checks.
+- `/issues/new` - authenticated issue submission.
+- `/map` - public issue map.
+- `/admin` - server-protected admin dashboard.
+- `/admin/issues/[id]` - server-protected moderation page.
+- `/api/health` - basic JSON health check.
+
+## Database Schema Summary
+
+SQL migrations live in `supabase/migrations` and should be run in order.
+
+- `profiles` - user profile and role (`user` or `admin`).
+- `issues` - civic reports with reporter, title, description, category, urgency, status, coordinates, optional address label, optional image path, public visibility, timestamps, and resolution timestamp.
+- `issue_status_history` - status transitions with `from_status`, `to_status`, changed-by user, optional note, and timestamp.
+- `issue_comments` - public updates and private admin notes.
+- `notifications` - Discord alert attempts with channel, event type, status, error message, and sent timestamp.
+
+## Security and RLS
+
+- Public users can read only `issues.is_public = true` issues that are not rejected.
+- Public issue details show only public comments.
+- Private admin notes and notification internals are available only through server-protected admin routes.
+- Admin pages call server-side `requireAdmin`, which verifies `profiles.role = admin`.
+- Admin mutations re-check admin role server-side before changing status or writing notes.
+- Issue creation requires an authenticated user and inserts `reporter_id = auth.uid()`.
+- Browser/client code never uses the Supabase service-role key or Discord webhook URL.
+- Realtime subscriptions are page-scoped and do not subscribe globally.
 
 ## Local Setup
 
 ```bash
 npm install
+cp .env.example .env.local
 npm run dev
 ```
 
 Open `http://localhost:3000`.
 
-The app builds without Supabase credentials. Copy `.env.example` to `.env.local` when you are ready to connect a real Supabase project.
+The app builds without real Supabase credentials. With empty Supabase env vars, data-backed flows show setup or disabled states instead of crashing.
+
+## Environment Variables
+
+See `.env.example` for the safe template.
+
+Required for connected Supabase usage:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_APP_URL`
+
+Optional server-only values:
+
+- `DISCORD_WEBHOOK_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+Never prefix server-only secrets with `NEXT_PUBLIC_`.
 
 ## Supabase Setup
 
-Supabase setup source files were added in Phase 1. Manual project setup still requires:
+Detailed setup is in [docs/deployment.md](docs/deployment.md) and [docs/supabase-setup.md](docs/supabase-setup.md).
 
-- Create a Supabase project.
-- Run migrations in `supabase/migrations`.
-- Create an `issue-images` storage bucket.
-- Configure Auth.
-- Add public URL and anon key to local and Vercel environment variables.
-- Keep service-role keys server-only.
-- Add `/auth/callback` to local and deployed Auth redirect URLs.
-- Promote an admin by updating `profiles.role` manually in SQL after signup.
-- Create the `issue-images` storage bucket.
-- Optionally add `DISCORD_WEBHOOK_URL` server-side for high and critical issue alerts.
+Short version:
 
-## Current Demo Flow
+1. Create a Supabase project.
+2. Run migrations `001` through `005` from `supabase/migrations`.
+3. Create the `issue-images` bucket.
+4. Configure storage policies for authenticated user uploads.
+5. Enable email/password Auth and callback URLs.
+6. Enable Realtime for `public.issues`, `public.issue_status_history`, and `public.issue_comments`.
+7. Add public Supabase env vars locally and in Vercel.
+8. Register a user and promote that profile to `admin` for moderation.
 
-The current local demo flow can show:
+## Discord Webhook Setup
+
+Discord alerts are optional. Issue creation still succeeds without a webhook.
+
+1. Create a Discord channel webhook.
+2. Add `DISCORD_WEBHOOK_URL` as a server-only local/Vercel environment variable.
+3. Set `NEXT_PUBLIC_APP_URL` so Discord links point to the deployed app.
+4. Submit a high or critical issue.
+5. Verify the alert in Discord and the notification row in `/admin/issues/[id]`.
+
+## Realtime Setup
+
+In Supabase, open Database > Publications and enable Realtime for:
+
+- `public.issues`
+- `public.issue_status_history`
+- `public.issue_comments`
+
+The app uses Realtime only on selected pages:
+
+- `/map` updates public markers while mounted.
+- `/admin` shows a refresh prompt for issue changes.
+- `/issues/[id]` and `/admin/issues/[id]` show refresh prompts for selected issue changes.
+
+## Deployment on Vercel
+
+Use [docs/deployment.md](docs/deployment.md) for the full checklist.
+
+High-level flow:
+
+1. Push the repo to GitHub.
+2. Import the repo in Vercel.
+3. Add the environment variables listed above.
+4. Deploy.
+5. Add deployed Auth callback URLs in Supabase.
+6. Run the smoke test checklist.
+
+Do not claim a live demo URL until the Vercel deployment is actually working.
+
+## Demo Flow
+
+Detailed script: [docs/demo-script.md](docs/demo-script.md).
 
 1. Open the landing page.
 2. Register or log in.
-3. Create an issue from `/issues/new` with title, description, category, urgency, optional address label, optional image, and map-selected coordinates.
-4. Redirect to the `/issues/[id]` detail page after successful creation.
-5. Browse `/issues` with status, category, urgency, date sort, and pagination controls.
-6. Open an issue detail page to view the image, public status timeline, public comments/updates, location metadata, and Leaflet map preview.
-7. Open `/map` to view public, non-rejected issues as status/urgency styled markers with popups and filters.
-8. Open `/admin` as an admin to filter the moderation queue, view summary cards, inspect analytics charts, and scan recent status activity.
-9. Open `/admin/issues/[id]` to update status, write status history, post public updates, save private admin notes, and review notification attempts.
-10. Watch `/map` update public markers while the page is open, or use the refresh prompts on `/admin` and `/issues/[id]` after live changes.
-11. Trigger a skipped, sent, or failed notification record for high and critical reports.
-12. Check `/api/health` for basic app and public environment status.
+3. Create an issue with map location and optional image.
+4. View the issue detail page.
+5. Browse the public issue list.
+6. Open the public map.
+7. Sign in as an admin and update status.
+8. Observe map updates or refresh prompts from Realtime.
+9. Submit a high-priority issue and confirm Discord notification behavior.
+10. Review admin analytics.
 
-Later phases add final deployment polish and demo packaging.
+## Screenshots
 
-## Validation
+Screenshots are not committed yet. Add real screenshots only after the app is connected to demo data. Expected paths are documented in [docs/screenshots/README.md](docs/screenshots/README.md).
+
+Expected files:
+
+- `docs/screenshots/landing.png`
+- `docs/screenshots/new-report.png`
+- `docs/screenshots/issue-list.png`
+- `docs/screenshots/issue-detail.png`
+- `docs/screenshots/public-map.png`
+- `docs/screenshots/admin-dashboard.png`
+- `docs/screenshots/admin-issue-detail.png`
+- `docs/screenshots/analytics.png`
+- `docs/screenshots/discord-alert.png`
+
+## Testing and CI
+
+Local validation:
 
 ```bash
 npm run lint
@@ -103,95 +212,15 @@ npm run test
 npm run build
 ```
 
-The GitHub Actions workflow runs the same validation commands on push and pull request.
+GitHub Actions runs the same validation commands on push and pull request. The workflow uses `npm ci`, project scripts, and no paid external services.
 
-## Documentation
+Current test coverage includes validators, auth helpers, image validation, filter parsing, status helpers, map marker helpers, realtime merge helpers, analytics calculations, Discord payload helpers, the health route, and core UI rendering.
 
-- `docs/architecture.md` explains the target architecture and Phase 0 boundaries.
-- `docs/free-tier-guardrails.md` records the cost-control rules from the source-of-truth plan.
-- `docs/supabase-setup.md` explains how to run migrations, configure Auth, create the `issue-images` bucket, and promote an admin user.
+## Future Improvements
 
-## Public Browsing Flow
-
-- `/issues` fetches only public, non-rejected issues from Supabase.
-- Filters support status, category, urgency, and newest/oldest date sorting.
-- Pagination limits reads so the public page stays free-tier friendly.
-- `/issues/[id]` enforces visibility on the server before rendering details.
-- Public visitors see only public comments and status history for visible issues.
-- Private admin notes are not shown to normal users.
-
-## Public Map Flow
-
-- `/map` fetches only public, non-rejected issues from Supabase.
-- Filters support status, category, and urgency.
-- Marker color reflects status; high and critical urgency markers receive stronger emphasis.
-- Popups show title, category, status, urgency, created date, and a detail-page link.
-- Map reads are capped for free-tier safety and use OpenStreetMap attribution.
-- While `/map` is open, a page-scoped Realtime subscription merges issue inserts, updates, and deletes into the visible marker set.
-- Realtime marker updates re-apply public visibility, status, category, and urgency rules before rendering.
-
-## Admin Moderation Flow
-
-- `/admin` is protected by a server-side `profiles.role = admin` check.
-- Admin filters support status, category, urgency, and date sorting.
-- Summary cards show open, in-progress, resolved/closed, and high/critical counts.
-- `/admin/issues/[id]` shows issue details, image, map preview, reporter, status history, public comments, and private admin notes.
-- Status updates run through a server action that re-checks admin role before updating `issues`.
-- The reopen rule is explicit: resolved/closed sets `resolved_at`; open/in-progress clears it; duplicate/rejected preserve it.
-- Public updates are visible on public detail pages; private admin notes stay admin-only.
-- `/admin` and issue detail pages use scoped Realtime refresh prompts rather than global subscriptions, so server-side role checks remain authoritative after refresh.
-
-## Realtime Behavior
-
-- The browser helper uses only `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-- Missing Supabase env vars show a disabled realtime indicator instead of crashing or blocking builds.
-- `/map` subscribes only while the map component is mounted and only renders public, non-rejected markers.
-- `/admin` listens for issue table changes while the dashboard is open and prompts admins to refresh through the server-protected route.
-- `/issues/[id]` and `/admin/issues/[id]` listen only for the selected issue, status history, and comments, then refresh through server-side visibility rules.
-
-## Discord Alert Behavior
-
-- High and critical issue submissions call a server-only Discord webhook helper after the issue row is created.
-- The alert includes the CivicPulse name, title, category, urgency, status, location, and a detail link built from `NEXT_PUBLIC_APP_URL`.
-- Missing `DISCORD_WEBHOOK_URL` records a skipped notification and never blocks issue creation.
-- Failed webhook requests record `failed` with an error message; successful requests record `sent` and `sent_at`.
-- Notification rows are visible only to admins on `/admin/issues/[id]`.
-
-## Analytics Flow
-
-- `/admin` loads analytics through server-only admin functions and the existing `profiles.role = admin` guard.
-- Admin cards show open, in-progress, resolved/closed, high/critical, and average resolution time.
-- Recharts visualizes status, category, and urgency counts in client-only chart components.
-- Recent activity comes from `issue_status_history` with issue title, status transition, actor, safe admin-visible note, and timestamp.
-- The landing page shows only public-safe aggregate counts for public, non-rejected issues.
-
-## Hardening Notes
-
-- `/api/health` returns basic JSON health and public environment readiness without exposing server-only secrets.
-- Global not-found, unauthorized, map error, and route loading states are present for major flows.
-- Form controls and buttons include visible keyboard focus styles.
-- The admin moderation queue has a mobile card fallback below desktop table widths.
-
-## Screenshot Checklist
-
-Screenshots are not committed yet. Capture these after the app is connected to Supabase seed/demo data:
-
-- `landing.png`
-- `new-report.png`
-- `issue-list.png`
-- `issue-detail.png`
-- `public-map.png`
-- `admin-dashboard.png`
-- `analytics.png`
-- `realtime-refresh.png` after Phase 7
-- `discord-alert.png`
-
-## Environment Variables
-
-See `.env.example` for the safe variable template:
-
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `DISCORD_WEBHOOK_URL`
-- `NEXT_PUBLIC_APP_URL`
+- User dashboard for viewing a reporter's own submitted issues.
+- Optional private storage bucket with signed image URLs.
+- Marker clustering for larger public datasets.
+- Richer analytics by neighborhood/date range once enough data exists.
+- Additional notification adapters if a future deployment has approved infrastructure.
+- Automated screenshot capture after deployment.

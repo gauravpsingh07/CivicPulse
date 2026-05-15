@@ -1,5 +1,7 @@
 # Supabase Setup
 
+For deployment-specific setup, use `docs/deployment.md`. This file keeps the Supabase behavior notes and local/manual setup reference in one place.
+
 Phase 1 adds the database schema, RLS policies, seed data, typed helpers, and validation layer. The app still builds without real Supabase credentials.
 
 ## 1. Create a Supabase Project
