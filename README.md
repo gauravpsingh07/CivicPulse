@@ -2,7 +2,7 @@
 
 CivicPulse is a portfolio-grade civic reporting platform for community issues such as potholes, broken streetlights, fallen trees, unsafe sidewalks, water leaks, trash overflow, and accessibility problems.
 
-This repository is currently at **Phase 5**: project scaffold, shared UI, docs, CI, Supabase SQL migrations, RLS policies, seed data, safe Supabase helpers, manual database types, Zod validators, Supabase Auth, protected routes, authenticated issue submission, public issue browsing, and a full public Leaflet/OpenStreetMap dashboard.
+This repository is currently at **Phase 6**: project scaffold, shared UI, docs, CI, Supabase SQL migrations, RLS policies, seed data, safe Supabase helpers, manual database types, Zod validators, Supabase Auth, protected routes, authenticated issue submission, public browsing/map views, and server-protected admin moderation.
 
 ## Problem
 
@@ -42,7 +42,7 @@ CivicPulse will combine map-selected reports, public tracking, authenticated das
 - [x] Issue report form with validation, map picker, and image upload guardrails
 - [x] Public issue list, detail pages, filters, status badges, and timeline
 - [x] Leaflet public map with OpenStreetMap attribution
-- [ ] Admin dashboard, status updates, history, and moderation workflow
+- [x] Admin dashboard, status updates, history, and moderation workflow
 - [ ] Supabase Realtime updates for map, admin, and issue detail pages
 - [ ] Discord alert workflow for high and critical reports
 - [ ] Analytics cards and charts
@@ -85,9 +85,11 @@ The current local demo flow can show:
 5. Browse `/issues` with status, category, urgency, date sort, and pagination controls.
 6. Open an issue detail page to view the image, public status timeline, public comments/updates, location metadata, and Leaflet map preview.
 7. Open `/map` to view public, non-rejected issues as status/urgency styled markers with popups and filters.
-8. Trigger a skipped, sent, or failed notification record for high and critical reports.
+8. Open `/admin` as an admin to filter the moderation queue and view summary cards.
+9. Open `/admin/issues/[id]` to update status, write status history, post public updates, and save private admin notes.
+10. Trigger a skipped, sent, or failed notification record for high and critical reports.
 
-Later phases add realtime updates, admin workflows, and analytics.
+Later phases add realtime updates and analytics.
 
 ## Validation
 
@@ -122,6 +124,16 @@ The GitHub Actions workflow runs the same validation commands on push and pull r
 - Marker color reflects status; high and critical urgency markers receive stronger emphasis.
 - Popups show title, category, status, urgency, created date, and a detail-page link.
 - Map reads are capped for free-tier safety and use OpenStreetMap attribution.
+
+## Admin Moderation Flow
+
+- `/admin` is protected by a server-side `profiles.role = admin` check.
+- Admin filters support status, category, urgency, and date sorting.
+- Summary cards show open, in-progress, resolved/closed, and high/critical counts.
+- `/admin/issues/[id]` shows issue details, image, map preview, reporter, status history, public comments, and private admin notes.
+- Status updates run through a server action that re-checks admin role before updating `issues`.
+- The reopen rule is explicit: resolved/closed sets `resolved_at`; open/in-progress clears it; duplicate/rejected preserve it.
+- Public updates are visible on public detail pages; private admin notes stay admin-only.
 
 ## Screenshot Checklist
 

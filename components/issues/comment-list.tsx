@@ -6,14 +6,18 @@ import type { Tables } from "@/lib/types/database";
 export function CommentList({
   canViewPrivateComments,
   comments,
+  emptyMessage = "No public updates have been posted for this issue yet.",
+  title = "Public updates",
 }: {
   canViewPrivateComments: boolean;
   comments: Tables<"issue_comments">[];
+  emptyMessage?: string;
+  title?: string;
 }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Public updates</CardTitle>
+        <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
         {comments.length ? (
@@ -38,7 +42,7 @@ export function CommentList({
           </div>
         ) : (
           <p className="text-sm leading-6 text-[var(--muted)]">
-            No public updates have been posted for this issue yet.
+            {emptyMessage}
           </p>
         )}
       </CardContent>

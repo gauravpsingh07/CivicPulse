@@ -16,6 +16,7 @@ Run the SQL files in this order:
 2. `supabase/migrations/002_rls_policies.sql`
 3. `supabase/migrations/003_seed_demo_data.sql`
 4. `supabase/migrations/004_notification_issue_owner_insert.sql`
+5. `supabase/migrations/005_admin_status_history_ownership.sql`
 
 You can run them through the Supabase SQL editor or the Supabase CLI after linking the project.
 
@@ -66,6 +67,14 @@ Phase 5 behavior:
 - Public map filters support status, category, and urgency.
 - Map marker queries are capped for free-tier usage.
 - Leaflet renders public markers in the browser only; Supabase credentials are not required for build.
+
+Phase 6 behavior:
+
+- `/admin` and `/admin/issues/[id]` require a server-side admin profile check.
+- Admins can read all issues, public comments, and private admin notes through existing RLS policies.
+- `005_admin_status_history_ownership.sql` removes the Phase 1 status-history trigger so the admin server action writes one exact history row per status change.
+- The status update action sets `resolved_at` when moving to resolved/closed, clears it when reopening to open/in-progress, and preserves it for duplicate/rejected.
+- Public admin updates use `issue_comments.is_public = true`; private notes use `is_public = false`.
 
 ## 4. Create the `issue-images` Storage Bucket
 

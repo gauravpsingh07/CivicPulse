@@ -1,47 +1,80 @@
-import { ShieldCheck } from "lucide-react";
+import { AlertCircle, ShieldCheck } from "lucide-react";
+import { AdminIssueFilters } from "@/components/admin/admin-issue-filters";
+import { AdminIssueTable } from "@/components/admin/admin-issue-table";
+import { AdminPagination } from "@/components/admin/admin-pagination";
+import { AdminSummaryCards } from "@/components/admin/admin-summary-cards";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { parseAdminIssueFilters } from "@/lib/admin/filters";
+import { getAdminIssues } from "@/lib/admin/data";
 import { requireAdmin } from "@/lib/auth/profile";
 
-export default async function AdminPage() {
+type AdminPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function AdminPage({ searchParams }: AdminPageProps) {
   const { user, profile } = await requireAdmin("/admin");
+  const query = await searchParams;
+  const filters = parseAdminIssueFilters(query);
+  const result = await getAdminIssues(filters);
 
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-[var(--background)] px-5 py-10 sm:px-8">
-      <div className="mx-auto max-w-5xl">
-        <p className="text-sm font-semibold text-[var(--accent-strong)]">
-          Server-protected admin
-        </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-normal">
-          Admin dashboard
-        </h1>
-        <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--muted)]">
-          This shell is available only after a server-side profile check
-          confirms `profiles.role = admin`. Issue moderation and analytics
-          arrive in later phases.
-        </p>
-
-        <Card className="mt-8">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <span className="grid size-11 place-items-center rounded-md bg-[var(--surface-strong)] text-[var(--accent-strong)]">
-                <ShieldCheck className="size-5" aria-hidden="true" />
-              </span>
-              <div>
-                <CardTitle>Admin session verified</CardTitle>
-                <p className="mt-1 text-sm text-[var(--muted)]">{user.email}</p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Badge variant="success">{profile.role}</Badge>
-            <p className="mt-5 text-sm leading-6 text-[var(--muted)]">
-              Phase 6 will add the admin issue table, status update dialog,
-              moderation notes, and status history workflows here.
+      <div className="mx-auto max-w-7xl space-y-8">
+        <section className="flex flex-col justify-between gap-5 xl:flex-row xl:items-end">
+          <div>
+            <Badge variant="success">
+              <ShieldCheck className="mr-1 size-3" aria-hidden="true" />
+              Server-protected admin
+            </Badge>
+            <h1 className="mt-5 text-4xl font-semibold tracking-normal">
+              Admin dashboard
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--muted)]">
+              Moderate every issue, filter the operational queue, and open
+              individual reports for status changes and admin notes.
             </p>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="rounded-lg border border-[var(--line)] bg-white px-4 py-3 text-sm">
+            <p className="font-semibold">{user.email}</p>
+            <p className="mt-1 text-[var(--muted)]">Role: {profile.role}</p>
+          </div>
+        </section>
+
+        <AdminSummaryCards summary={result.summary} />
+        <AdminIssueFilters filters={filters} />
+
+        {result.errorMessage ? (
+          <AdminNotice message={result.errorMessage} />
+        ) : null}
+
+        <AdminIssueTable issues={result.issues} />
+        <AdminPagination
+          filters={filters}
+          pageCount={result.pageCount}
+          totalCount={result.totalCount}
+        />
       </div>
     </main>
+  );
+}
+
+function AdminNotice({ message }: { message: string }) {
+  return (
+    <Card>
+      <CardContent className="flex gap-3 pt-6">
+        <AlertCircle
+          className="mt-0.5 size-5 text-[#9d3f29]"
+          aria-hidden="true"
+        />
+        <div>
+          <h2 className="font-semibold">Unable to load admin data</h2>
+          <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
+            {message}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
