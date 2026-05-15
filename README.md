@@ -1,6 +1,6 @@
 # CivicPulse
 
-Full-stack geospatial community issue reporting platform built with Next.js, TypeScript, Supabase, PostgreSQL, Leaflet, OpenStreetMap, Recharts, and Vercel-ready tooling.
+Full-stack geospatial community issue reporting platform built with Next.js, TypeScript, Supabase, PostgreSQL, Leaflet, OpenStreetMap, Recharts, GitHub Actions, and Vercel.
 
 ## Problem
 
@@ -12,15 +12,16 @@ CivicPulse lets authenticated users submit public civic reports with a title, de
 
 ## Live Demo
 
-Live demo: not deployed yet. Add the deployed Vercel URL here after production setup is complete.
+Live demo: https://civic-pulse-sandy.vercel.app
 
-GitHub repository: add the public repository URL here if this README is copied outside the repo.
+GitHub repository: https://github.com/gauravpsingh07/CivicPulse
 
 ## Features
 
 - Email/password authentication with Supabase Auth.
 - Protected issue submission at `/issues/new`.
 - Zod validation for auth, issue fields, filters, coordinates, and images.
+- Address, landmark, street, city, or ZIP search helper that recenters the map before the user clicks the exact issue location.
 - Optional issue image upload to Supabase Storage with JPEG, PNG, WebP, and 2 MB limits.
 - Public issue list with status, category, urgency, date sort, and pagination.
 - Public issue detail pages with image, status timeline, public comments, metadata, and Leaflet map preview.
@@ -46,7 +47,7 @@ GitHub repository: add the public repository URL here if this README is copied o
 - **Validation:** Zod
 - **Charts:** Recharts
 - **Testing:** Vitest, React Testing Library, jsdom
-- **CI/CD:** GitHub Actions, Vercel-ready build
+- **CI/CD:** GitHub Actions, Vercel deployment
 - **Notifications:** Discord webhook
 
 ## Architecture Overview
@@ -168,7 +169,7 @@ High-level flow:
 5. Add deployed Auth callback URLs in Supabase.
 6. Run the smoke test checklist.
 
-Do not claim a live demo URL until the Vercel deployment is actually working.
+Production deployment: https://civic-pulse-sandy.vercel.app
 
 ## Demo Flow
 
@@ -187,19 +188,7 @@ Detailed script: [docs/demo-script.md](docs/demo-script.md).
 
 ## Screenshots
 
-Screenshots are not committed yet. Add real screenshots only after the app is connected to demo data. Expected paths are documented in [docs/screenshots/README.md](docs/screenshots/README.md).
-
-Expected files:
-
-- `docs/screenshots/landing.png`
-- `docs/screenshots/new-report.png`
-- `docs/screenshots/issue-list.png`
-- `docs/screenshots/issue-detail.png`
-- `docs/screenshots/public-map.png`
-- `docs/screenshots/admin-dashboard.png`
-- `docs/screenshots/admin-issue-detail.png`
-- `docs/screenshots/analytics.png`
-- `docs/screenshots/discord-alert.png`
+Screenshots are intentionally not included in this repository. The deployed app can be reviewed directly through the live demo.
 
 ## Testing and CI
 
@@ -223,4 +212,3 @@ Current test coverage includes validators, auth helpers, image validation, filte
 - Marker clustering for larger public datasets.
 - Richer analytics by neighborhood/date range once enough data exists.
 - Additional notification adapters if a future deployment has approved infrastructure.
-- Automated screenshot capture after deployment.
