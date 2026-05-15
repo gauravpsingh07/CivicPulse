@@ -1,84 +1,95 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
 import {
   BellRing,
   CheckCircle2,
   ClipboardList,
-  Database,
-  Lock,
+  Camera,
+  CircleCheck,
+  FilePlus2,
   MapPin,
-  RadioTower,
   ShieldCheck,
+  UsersRound,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
-import {
-  ISSUE_CATEGORIES,
-  ISSUE_STATUSES,
-  ISSUE_URGENCY_LEVELS,
-} from "@/lib/constants";
 import { getPublicIssueStats } from "@/lib/issues/public";
 
 const featureCards = [
   {
-    title: "Map-first reporting",
+    title: "Report issues with photos and map location",
     description:
-      "Residents submit issues with a map-selected location, category, urgency, and optional photo.",
+      "Submit a clear report with details, urgency, an optional photo, and a precise location on the map.",
     icon: MapPin,
   },
   {
-    title: "Public transparency",
+    title: "Track status from Open to Resolved",
     description:
-      "Approved issues appear on public list, detail, and map views with clear status history.",
+      "Follow public status updates as reports move from review to resolution.",
+    icon: CircleCheck,
+  },
+  {
+    title: "View nearby issues on a public map",
+    description:
+      "Explore visible community reports by category, urgency, and current status.",
     icon: ClipboardList,
   },
   {
-    title: "Admin workflow",
+    title: "High-priority reports notify admins",
     description:
-      "Moderators can prioritize, update status, add notes, and keep the community timeline accurate.",
+      "Urgent reports can alert the moderation team so safety concerns get attention faster.",
+    icon: BellRing,
+  },
+];
+
+const howItWorks = [
+  {
+    title: "Submit a report",
+    description:
+      "Describe the issue, choose a category and urgency, add a location, and attach a photo when helpful.",
+  },
+  {
+    title: "Location appears on the map",
+    description:
+      "Approved public reports become easy to find on the issue list and map.",
+  },
+  {
+    title: "Admin reviews and updates status",
+    description:
+      "Community admins moderate reports, update progress, and add public updates.",
+  },
+  {
+    title: "Community tracks progress",
+    description:
+      "Residents can follow status changes from open reports through resolution.",
+  },
+];
+
+const trustItems = [
+  {
+    title: "Secure sign-in",
+    description:
+      "Accounts help protect reporting tools and let admins manage sensitive workflows.",
     icon: ShieldCheck,
   },
   {
-    title: "Realtime civic pulse",
+    title: "Public status tracking",
     description:
-      "Supabase Realtime powers live map and dashboard updates when reports are created or changed.",
-    icon: RadioTower,
+      "Visible reports show clear status history so residents know what changed.",
+    icon: CheckCircle2,
   },
   {
-    title: "High-priority alerts",
+    title: "Image uploads",
     description:
-      "High and critical reports can notify a Discord channel without paid email infrastructure.",
-    icon: BellRing,
+      "Photos can add context while keeping reports organized with location and category details.",
+    icon: Camera,
   },
   {
-    title: "Portfolio-grade backend",
+    title: "Admin moderation",
     description:
-      "PostgreSQL tables, RLS policies, storage, validation, tests, CI, and deployment docs are planned from day one.",
-    icon: Database,
+      "Admins review reports, update progress, and keep private notes out of the public view.",
+    icon: UsersRound,
   },
-];
-
-const stackItems = [
-  "Next.js App Router",
-  "TypeScript",
-  "Supabase",
-  "PostgreSQL",
-  "Leaflet",
-  "OpenStreetMap",
-  "Recharts",
-  "Vitest",
-  "GitHub Actions",
-  "Vercel",
-];
-
-const roadmap = [
-  "Phase 0: scaffold, UI foundation, docs, CI",
-  "Phase 1: Supabase schema, RLS, seed data",
-  "Phase 2: auth and protected dashboard",
-  "Phase 3: report form, map picker, image validation",
-  "Phases 4-9: public views, map, admin, realtime, alerts, analytics",
-  "Phase 10: testing, accessibility, mobile polish, hardening",
 ];
 
 export default async function Home() {
@@ -98,15 +109,15 @@ export default async function Home() {
           <div className="grid flex-1 items-center gap-12 lg:grid-cols-[1.02fr_0.98fr]">
             <div className="max-w-3xl py-12 lg:py-20">
               <Badge variant="success" className="mb-6">
-                Analytics and alerts ready
+                Community issue reporting
               </Badge>
               <h1 className="max-w-4xl text-5xl font-semibold leading-[1.02] tracking-normal text-balance sm:text-6xl lg:text-7xl">
-                CivicPulse
+                Report local issues. Track progress on a public map.
               </h1>
               <p className="mt-6 max-w-2xl text-xl leading-8 text-[var(--muted)]">
-                A full-stack geospatial platform for reporting civic issues,
-                tracking public status, and coordinating admin response without
-                paid maps, email, or background-job services.
+                CivicPulse helps residents report potholes, broken streetlights,
+                water leaks, unsafe sidewalks, trash overflow, and other local
+                concerns with clear location and status tracking.
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
                 <Link
@@ -171,30 +182,21 @@ export default async function Home() {
               <div className="absolute inset-x-5 bottom-5 rounded-lg border border-white/70 bg-white/88 p-4 shadow-xl backdrop-blur">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-sm font-semibold">Live civic queue</p>
+                    <p className="text-sm font-semibold">Public issue map</p>
                     <p className="mt-1 text-sm text-[var(--muted)]">
-                      Public reports, admin review, and status changes converge
-                      in one operational view.
+                      Residents can view nearby reports and follow progress as
+                      admins review and update status.
                     </p>
                   </div>
                   <Badge variant="warning">Open</Badge>
                 </div>
-                <div className="mt-4 grid grid-cols-3 gap-3">
-                  {ISSUE_STATUSES.slice(0, 3).map((status) => (
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  {["Open", "In progress", "Resolved"].map((status) => (
                     <div
-                      key={status.value}
-                      className="rounded-md border border-[var(--line)] bg-white px-3 py-2"
+                      key={status}
+                      className="rounded-md border border-[var(--line)] bg-white px-3 py-2 text-sm font-semibold"
                     >
-                      <div className="text-xs text-[var(--muted)]">
-                        {status.label}
-                      </div>
-                      <div className="mt-1 text-lg font-semibold">
-                        {status.value === "open"
-                          ? "18"
-                          : status.value === "in_progress"
-                            ? "7"
-                            : "24"}
-                      </div>
+                      {status}
                     </div>
                   ))}
                 </div>
@@ -205,7 +207,19 @@ export default async function Home() {
       </section>
 
       <section className="border-y border-[var(--line)] bg-white px-5 py-16 sm:px-8">
-        <div className="mx-auto grid max-w-7xl gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-3xl">
+            <Badge variant="default">For residents and community teams</Badge>
+            <h2 className="mt-5 text-3xl font-semibold tracking-normal sm:text-4xl">
+              A simple place to report, review, and follow local issues.
+            </h2>
+            <p className="mt-4 text-base leading-7 text-[var(--muted)]">
+              CivicPulse keeps reports understandable for residents and
+              organized for the people responsible for reviewing them.
+            </p>
+          </div>
+        </div>
+        <div className="mx-auto mt-10 grid max-w-7xl gap-5 md:grid-cols-2 xl:grid-cols-4">
           {featureCards.map((feature) => (
             <Card key={feature.title}>
               <CardHeader>
@@ -225,83 +239,69 @@ export default async function Home() {
       </section>
 
       <section className="bg-[#fbfaf3] px-5 py-16 sm:px-8">
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.86fr_1.14fr]">
+        <div className="mx-auto max-w-7xl">
           <div>
-            <Badge variant="default">Architecture</Badge>
+            <Badge variant="default">How it works</Badge>
             <h2 className="mt-5 text-3xl font-semibold tracking-normal sm:text-4xl">
-              Built for real backend depth, not just interface polish.
+              From report to resolution, every step stays visible.
             </h2>
             <p className="mt-5 text-base leading-7 text-[var(--muted)]">
-              The final system pairs Next.js pages and server logic with
-              Supabase Auth, PostgreSQL, Storage, Realtime, and database-level
-              Row Level Security. The current build includes protected report
-              creation, map-picked coordinates, validated images, and optional
-              high-priority alerts.
+              CivicPulse gives residents a clear path for submitting concerns
+              and gives admins a focused workflow for reviewing and updating
+              them.
             </p>
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <StackPanel
-              title="Core stack"
-              icon={<Database className="size-5" aria-hidden="true" />}
-              items={stackItems}
-            />
-            <StackPanel
-              title="Guardrails"
-              icon={<Lock className="size-5" aria-hidden="true" />}
-              items={[
-                "No service-role key in client code",
-                "OpenStreetMap attribution required",
-                "Leaflet isolated from SSR",
-                "Image uploads capped at 2 MB",
-                "Pagination for growing issue lists",
-                "Admin checks enforced server-side",
-              ]}
-            />
-          </div>
+          <ol className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            {howItWorks.map((step, index) => (
+              <li key={step.title}>
+                <Card className="h-full">
+                  <CardHeader>
+                    <span className="grid size-10 place-items-center rounded-md bg-white text-sm font-semibold text-[var(--accent-strong)]">
+                      {index + 1}
+                    </span>
+                    <CardTitle>{step.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm leading-6 text-[var(--muted)]">
+                      {step.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 
       <section className="bg-white px-5 py-16 sm:px-8">
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_1fr]">
-          <Card>
-            <CardHeader>
-              <CardTitle>Issue model foundations</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <TokenList
-                title="Categories"
-                items={ISSUE_CATEGORIES.map((item) => item.label)}
-              />
-              <TokenList
-                title="Urgency"
-                items={ISSUE_URGENCY_LEVELS.map((item) => item.label)}
-              />
-              <TokenList
-                title="Status lifecycle"
-                items={ISSUE_STATUSES.map((item) => item.label)}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Phase-by-phase build path</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ol className="space-y-4">
-                {roadmap.map((item, index) => (
-                  <li key={item} className="flex gap-3">
-                    <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-md bg-[var(--surface-strong)] text-sm font-semibold text-[var(--accent-strong)]">
-                      {index + 1}
-                    </span>
-                    <span className="text-sm leading-6 text-[var(--muted)]">
-                      {item}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            </CardContent>
-          </Card>
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-3xl">
+            <Badge variant="success">Public trust</Badge>
+            <h2 className="mt-5 text-3xl font-semibold tracking-normal sm:text-4xl">
+              Built around clear updates and responsible moderation.
+            </h2>
+            <p className="mt-4 text-base leading-7 text-[var(--muted)]">
+              Public tracking keeps residents informed, while protected admin
+              tools keep sensitive moderation details out of the public view.
+            </p>
+          </div>
+          <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            {trustItems.map((item) => (
+              <Card key={item.title}>
+                <CardHeader>
+                  <div className="mb-5 grid size-11 place-items-center rounded-md bg-[var(--surface-strong)] text-[var(--accent-strong)]">
+                    <item.icon className="size-5" aria-hidden="true" />
+                  </div>
+                  <CardTitle>{item.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm leading-6 text-[var(--muted)]">
+                    {item.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -309,25 +309,25 @@ export default async function Home() {
         <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 md:flex-row md:items-center">
           <div>
             <div className="flex items-center gap-2 text-sm font-medium text-[#bee5c4]">
-              <CheckCircle2 className="size-4" aria-hidden="true" />
-              Phase 9 adds admin analytics.
+              <FilePlus2 className="size-4" aria-hidden="true" />
+              Ready to report a local concern?
             </div>
             <h2 className="mt-4 text-3xl font-semibold">
-              Ready for deployment polish and demo packaging.
+              Help your community see what needs attention.
             </h2>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Link
-              href="/issues"
+              href="/issues/new"
               className={buttonVariants({ variant: "light" })}
             >
-              Browse issues
+              Report an issue
             </Link>
             <Link
-              href="/login"
+              href="/map"
               className={buttonVariants({ variant: "outlineDark" })}
             >
-              Continue to login
+              View public map
             </Link>
           </div>
         </div>
@@ -357,53 +357,6 @@ function MapMarker({
       <div className="flex items-center gap-2 rounded-md border border-white/70 bg-white/90 px-3 py-2 text-xs font-semibold shadow-lg backdrop-blur">
         <span className={`size-3 rounded-full ${toneClass}`} />
         {label}
-      </div>
-    </div>
-  );
-}
-
-function StackPanel({
-  title,
-  icon,
-  items,
-}: {
-  title: string;
-  icon: ReactNode;
-  items: string[];
-}) {
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-3">
-          <span className="grid size-10 place-items-center rounded-md bg-white text-[var(--accent-strong)]">
-            {icon}
-          </span>
-          <CardTitle>{title}</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-wrap gap-2">
-          {items.map((item) => (
-            <Badge key={item} variant="neutral">
-              {item}
-            </Badge>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function TokenList({ title, items }: { title: string; items: string[] }) {
-  return (
-    <div>
-      <h3 className="text-sm font-semibold">{title}</h3>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {items.map((item) => (
-          <Badge key={item} variant="neutral">
-            {item}
-          </Badge>
-        ))}
       </div>
     </div>
   );
