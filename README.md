@@ -2,7 +2,7 @@
 
 CivicPulse is a portfolio-grade civic reporting platform for community issues such as potholes, broken streetlights, fallen trees, unsafe sidewalks, water leaks, trash overflow, and accessibility problems.
 
-This repository is currently at **Phase 7**: project scaffold, shared UI, docs, CI, Supabase SQL migrations, RLS policies, seed data, safe Supabase helpers, manual database types, Zod validators, Supabase Auth, protected routes, authenticated issue submission, public browsing/map views, server-protected admin moderation, and page-scoped Supabase Realtime updates.
+This repository is currently at **Phase 8**: project scaffold, shared UI, docs, CI, Supabase SQL migrations, RLS policies, seed data, safe Supabase helpers, manual database types, Zod validators, Supabase Auth, protected routes, authenticated issue submission, public browsing/map views, server-protected admin moderation, page-scoped Supabase Realtime updates, and server-only Discord alert logging.
 
 ## Problem
 
@@ -44,7 +44,7 @@ CivicPulse will combine map-selected reports, public tracking, authenticated das
 - [x] Leaflet public map with OpenStreetMap attribution
 - [x] Admin dashboard, status updates, history, and moderation workflow
 - [x] Supabase Realtime updates for map, admin, and issue detail pages
-- [ ] Discord alert workflow for high and critical reports
+- [x] Discord alert workflow for high and critical reports
 - [ ] Analytics cards and charts
 - [ ] Deployment docs, demo script, screenshots, and resume bullets
 
@@ -86,7 +86,7 @@ The current local demo flow can show:
 6. Open an issue detail page to view the image, public status timeline, public comments/updates, location metadata, and Leaflet map preview.
 7. Open `/map` to view public, non-rejected issues as status/urgency styled markers with popups and filters.
 8. Open `/admin` as an admin to filter the moderation queue and view summary cards.
-9. Open `/admin/issues/[id]` to update status, write status history, post public updates, and save private admin notes.
+9. Open `/admin/issues/[id]` to update status, write status history, post public updates, save private admin notes, and review notification attempts.
 10. Watch `/map` update public markers while the page is open, or use the refresh prompts on `/admin` and `/issues/[id]` after live changes.
 11. Trigger a skipped, sent, or failed notification record for high and critical reports.
 
@@ -147,6 +147,14 @@ The GitHub Actions workflow runs the same validation commands on push and pull r
 - `/admin` listens for issue table changes while the dashboard is open and prompts admins to refresh through the server-protected route.
 - `/issues/[id]` and `/admin/issues/[id]` listen only for the selected issue, status history, and comments, then refresh through server-side visibility rules.
 
+## Discord Alert Behavior
+
+- High and critical issue submissions call a server-only Discord webhook helper after the issue row is created.
+- The alert includes the CivicPulse name, title, category, urgency, status, location, and a detail link built from `NEXT_PUBLIC_APP_URL`.
+- Missing `DISCORD_WEBHOOK_URL` records a skipped notification and never blocks issue creation.
+- Failed webhook requests record `failed` with an error message; successful requests record `sent` and `sent_at`.
+- Notification rows are visible only to admins on `/admin/issues/[id]`.
+
 ## Screenshot Checklist
 
 Screenshots are not committed yet. Capture these after the app is connected to Supabase seed/demo data:
@@ -158,8 +166,8 @@ Screenshots are not committed yet. Capture these after the app is connected to S
 - `public-map.png`
 - `admin-dashboard.png`
 - `realtime-refresh.png` after Phase 7
+- `discord-alert.png`
 - `analytics.png` after Phase 9
-- `discord-alert.png` when the optional webhook is configured
 
 ## Environment Variables
 

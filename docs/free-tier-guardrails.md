@@ -23,6 +23,7 @@ CivicPulse is designed for portfolio-scale usage on free-friendly services. Thes
 - Prefer refresh prompts for admin/detail realtime events so server filters, RLS, and role checks stay authoritative.
 - Avoid paid Google Maps, paid geocoding, paid email providers, and paid background jobs.
 - Keep Discord alerts optional so missing webhook configuration never blocks issue creation.
+- Send Discord alerts only from authenticated issue creation on the server, not from public browser-callable routes.
 
 ## Secret Handling
 

@@ -92,6 +92,13 @@ Realtime setup:
    - `public.issue_comments`
 3. Keep RLS enabled. Public clients rely on the existing policies so private admin notes are not visible to normal users.
 
+Phase 8 behavior:
+
+- High and critical urgency reports send a server-only Discord webhook payload after issue creation.
+- The payload includes CivicPulse, "New high-priority issue reported", title, category, urgency, status, location, and a detail link built from `NEXT_PUBLIC_APP_URL`.
+- Missing `DISCORD_WEBHOOK_URL` records a skipped notification row and does not block issue creation.
+- Admins can view per-issue notification attempts from `/admin/issues/[id]`; public visitors cannot view notification internals.
+
 ## 4. Create the `issue-images` Storage Bucket
 
 Create a bucket named `issue-images`.
@@ -156,8 +163,9 @@ Discord alerts are optional. Issue creation still succeeds when no webhook is co
 2. Add the webhook URL as a server-only environment variable:
    - Local: `DISCORD_WEBHOOK_URL=...` in `.env.local`
    - Vercel: add `DISCORD_WEBHOOK_URL` without the `NEXT_PUBLIC_` prefix
-3. Submit a high or critical urgency issue.
-4. Check `public.notifications` as an admin to verify `sent`, `failed`, or `skipped` status.
+3. Set `NEXT_PUBLIC_APP_URL` to the local or deployed app URL used in alert links.
+4. Submit a high or critical urgency issue.
+5. Check `/admin/issues/[id]` or `public.notifications` as an admin to verify `sent`, `failed`, or `skipped` status.
 
 ## 7. Create an Admin User
 

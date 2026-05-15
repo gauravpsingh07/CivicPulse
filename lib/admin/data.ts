@@ -16,6 +16,7 @@ export type AdminIssueDetail = {
   issue: AdminIssue;
   timeline: Tables<"issue_status_history">[];
   comments: Tables<"issue_comments">[];
+  notifications: Tables<"notifications">[];
 };
 
 export type AdminIssuesResult = {
@@ -120,19 +121,25 @@ export async function getAdminIssueById(
     notFound();
   }
 
-  const [adminIssues, timelineResult, commentsResult] = await Promise.all([
-    attachReporterProfiles([issue]),
-    supabase
-      .from("issue_status_history")
-      .select("*")
-      .eq("issue_id", issue.id)
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("issue_comments")
-      .select("*")
-      .eq("issue_id", issue.id)
-      .order("created_at", { ascending: true }),
-  ]);
+  const [adminIssues, timelineResult, commentsResult, notificationsResult] =
+    await Promise.all([
+      attachReporterProfiles([issue]),
+      supabase
+        .from("issue_status_history")
+        .select("*")
+        .eq("issue_id", issue.id)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("issue_comments")
+        .select("*")
+        .eq("issue_id", issue.id)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("notifications")
+        .select("*")
+        .eq("issue_id", issue.id)
+        .order("created_at", { ascending: false }),
+    ]);
 
   if (timelineResult.error) {
     throw new Error(timelineResult.error.message);
@@ -142,10 +149,15 @@ export async function getAdminIssueById(
     throw new Error(commentsResult.error.message);
   }
 
+  if (notificationsResult.error) {
+    throw new Error(notificationsResult.error.message);
+  }
+
   return {
     issue: adminIssues[0],
     timeline: timelineResult.data ?? [],
     comments: commentsResult.data ?? [],
+    notifications: notificationsResult.data ?? [],
   };
 }
 

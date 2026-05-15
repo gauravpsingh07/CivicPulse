@@ -11,6 +11,10 @@ import {
 } from "@/lib/images";
 import type { CreateIssueActionState } from "@/lib/issues/action-state";
 import { sendHighPriorityIssueAlert } from "@/lib/notifications/discord";
+import {
+  DISCORD_NOTIFICATION_CHANNEL,
+  HIGH_PRIORITY_ISSUE_CREATED_EVENT,
+} from "@/lib/notifications/discord-payload";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Tables } from "@/lib/types/database";
 import { createIssueSchema } from "@/lib/validators/issue";
@@ -169,8 +173,8 @@ async function recordHighPriorityNotification(issue: Tables<"issues">) {
 
   await supabase.from("notifications").insert({
     issue_id: issue.id,
-    channel: "discord",
-    event_type: `${issue.urgency}_issue_created`,
+    channel: DISCORD_NOTIFICATION_CHANNEL,
+    event_type: HIGH_PRIORITY_ISSUE_CREATED_EVENT,
     status: alertResult.status,
     error_message: alertResult.errorMessage,
     sent_at: alertResult.status === "sent" ? new Date().toISOString() : null,

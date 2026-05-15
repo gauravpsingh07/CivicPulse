@@ -8,6 +8,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { AdminCommentForm } from "@/components/admin/admin-comment-form";
+import { NotificationLog } from "@/components/admin/notification-log";
 import { StatusUpdateDialog } from "@/components/admin/status-update-dialog";
 import { CommentList } from "@/components/issues/comment-list";
 import { RealtimeRefreshPrompt } from "@/components/realtime/realtime-refresh-prompt";
@@ -36,7 +37,7 @@ export default async function AdminIssuePage({ params }: AdminIssuePageProps) {
     return <AdminIssueUnavailable />;
   }
 
-  const { comments, issue, timeline } = detail;
+  const { comments, issue, notifications, timeline } = detail;
 
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-[var(--background)] px-5 py-10 sm:px-8">
@@ -101,6 +102,7 @@ export default async function AdminIssuePage({ params }: AdminIssuePageProps) {
             </Card>
 
             <IssueTimeline events={timeline} />
+            <NotificationLog notifications={notifications} />
             <CommentList
               canViewPrivateComments
               comments={comments}
