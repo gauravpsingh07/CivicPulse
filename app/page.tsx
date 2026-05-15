@@ -319,7 +319,11 @@ export default async function Home() {
           <div className="flex flex-col gap-3 sm:flex-row">
             <Link
               href="/issues/new"
-              className={buttonVariants({ variant: "light" })}
+              className={buttonVariants({
+                variant: "light",
+                className:
+                  "text-[#173425] hover:text-[#173425] focus-visible:outline-white",
+              })}
             >
               Report an issue
             </Link>
