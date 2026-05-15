@@ -72,7 +72,7 @@ export async function requireAdmin(nextPath = "/admin") {
   const profile = await getCurrentProfile();
 
   if (!profile || !isAdminProfile(profile)) {
-    redirect("/dashboard?error=admin-required");
+    redirect("/unauthorized");
   }
 
   return { user, profile };

@@ -1,6 +1,6 @@
 # CivicPulse Architecture
 
-CivicPulse is planned as a full-stack Next.js App Router application backed by Supabase. Phase 0 created the local scaffolding, typed constants, reusable UI primitives, documentation, and CI workflow. Phase 1 added the SQL schema, RLS policies, seed data, Supabase helper files, manual database types, and Zod validators. Phase 2 added email/password auth actions, profile utilities, proxy session refresh, protected route shells, and role-aware navigation. Phase 3 added authenticated issue submission, an SSR-safe Leaflet map picker, optional Storage image upload, and a server-only Discord notification hook. Phase 4 added public issue list/detail pages, filters, pagination, public comments, status timeline rendering, and a client-only map preview. Phase 5 added the full public Leaflet/OpenStreetMap dashboard with public markers, popups, filters, and map stats. Phase 6 added server-protected admin moderation, status updates, history ownership, public updates, and private notes. Phase 7 added page-scoped Supabase Realtime for the public map, admin dashboard, and selected issue detail pages. Phase 8 finalized server-only Discord alerts and admin notification logs. Phase 9 adds admin analytics, Recharts visualizations, recent activity, and public-safe landing stats.
+CivicPulse is planned as a full-stack Next.js App Router application backed by Supabase. Phase 0 created the local scaffolding, typed constants, reusable UI primitives, documentation, and CI workflow. Phase 1 added the SQL schema, RLS policies, seed data, Supabase helper files, manual database types, and Zod validators. Phase 2 added email/password auth actions, profile utilities, proxy session refresh, protected route shells, and role-aware navigation. Phase 3 added authenticated issue submission, an SSR-safe Leaflet map picker, optional Storage image upload, and a server-only Discord notification hook. Phase 4 added public issue list/detail pages, filters, pagination, public comments, status timeline rendering, and a client-only map preview. Phase 5 added the full public Leaflet/OpenStreetMap dashboard with public markers, popups, filters, and map stats. Phase 6 added server-protected admin moderation, status updates, history ownership, public updates, and private notes. Phase 7 added page-scoped Supabase Realtime for the public map, admin dashboard, and selected issue detail pages. Phase 8 finalized server-only Discord alerts and admin notification logs. Phase 9 added admin analytics, Recharts visualizations, recent activity, and public-safe landing stats. Phase 10 hardens tests, loading states, error states, accessibility, mobile layouts, and health checks.
 
 ## Target System
 
@@ -33,6 +33,8 @@ Leaflet and OpenStreetMap provide the public map and map picker without Google M
 - Notification rows are loaded only through server-protected admin issue detail pages.
 - Analytics functions run server-side. Public pages receive only aggregate counts for public, non-rejected issues.
 - Admin charts and recent activity are protected by the same server-side admin guard as moderation tools.
+- `/api/health` exposes only basic app/public-env readiness and no server-only secret values.
+- Major routes include loading, empty, missing-env, unauthorized, and error states where practical.
 
 ## Planned Data Flow
 

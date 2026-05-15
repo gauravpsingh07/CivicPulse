@@ -77,7 +77,8 @@ const roadmap = [
   "Phase 1: Supabase schema, RLS, seed data",
   "Phase 2: auth and protected dashboard",
   "Phase 3: report form, map picker, image validation",
-  "Phase 4+: public views, map, admin, realtime, alerts, analytics",
+  "Phases 4-9: public views, map, admin, realtime, alerts, analytics",
+  "Phase 10: testing, accessibility, mobile polish, hardening",
 ];
 
 export default async function Home() {

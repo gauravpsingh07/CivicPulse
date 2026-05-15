@@ -106,6 +106,12 @@ Phase 9 behavior:
 - The landing page reads only public, non-rejected issue statuses for aggregate public stats.
 - Public pages do not read private admin notes or notification internals.
 
+Phase 10 behavior:
+
+- `/api/health` reports basic app status and public env readiness without exposing secret values.
+- Missing Supabase public env vars continue to show setup/help states instead of breaking builds.
+- Admin-only pages redirect non-admin users to `/unauthorized`.
+
 ## 4. Create the `issue-images` Storage Bucket
 
 Create a bucket named `issue-images`.

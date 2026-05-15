@@ -83,7 +83,7 @@ export function IssueForm() {
               className="inline-flex text-sm font-semibold text-[var(--accent-strong)]"
               href={`/issues/${state.createdIssueId}`}
             >
-              Open created issue shell
+              Open created issue
             </Link>
           ) : null}
 
@@ -199,7 +199,7 @@ export function IssueForm() {
                 PostgreSQL.
               </p>
             </div>
-            <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-[var(--line)] bg-white px-5 py-8 text-center hover:bg-[var(--surface-strong)]">
+            <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-[var(--line)] bg-white px-5 py-8 text-center hover:bg-[var(--surface-strong)] focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--accent-strong)]">
               <Upload
                 className="size-7 text-[var(--accent-strong)]"
                 aria-hidden="true"
@@ -209,6 +209,7 @@ export function IssueForm() {
                 JPEG, PNG, WebP. 2 MB max.
               </span>
               <input
+                aria-describedby="issue-image-help"
                 accept={acceptedTypes}
                 className="sr-only"
                 name="image"
@@ -231,6 +232,10 @@ export function IssueForm() {
                 type="file"
               />
             </label>
+            <p id="issue-image-help" className="sr-only">
+              Image upload is optional. Accepted types are JPEG, PNG, and WebP,
+              with a maximum size of 2 MB.
+            </p>
             {imageMessage ? (
               <p className="flex items-center gap-2 text-sm text-[#9d3f29]">
                 <AlertTriangle className="size-4" aria-hidden="true" />

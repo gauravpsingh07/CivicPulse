@@ -2,7 +2,7 @@
 
 CivicPulse is a portfolio-grade civic reporting platform for community issues such as potholes, broken streetlights, fallen trees, unsafe sidewalks, water leaks, trash overflow, and accessibility problems.
 
-This repository is currently at **Phase 9**: project scaffold, shared UI, docs, CI, Supabase SQL migrations, RLS policies, seed data, safe Supabase helpers, manual database types, Zod validators, Supabase Auth, protected routes, authenticated issue submission, public browsing/map views, server-protected admin moderation, page-scoped Supabase Realtime updates, server-only Discord alert logging, and admin analytics.
+This repository is currently at **Phase 10**: project scaffold, shared UI, docs, CI, Supabase SQL migrations, RLS policies, seed data, safe Supabase helpers, manual database types, Zod validators, Supabase Auth, protected routes, authenticated issue submission, public browsing/map views, server-protected admin moderation, page-scoped Supabase Realtime updates, server-only Discord alert logging, admin analytics, and hardened loading/error/accessibility states.
 
 ## Problem
 
@@ -46,6 +46,7 @@ CivicPulse will combine map-selected reports, public tracking, authenticated das
 - [x] Supabase Realtime updates for map, admin, and issue detail pages
 - [x] Discord alert workflow for high and critical reports
 - [x] Analytics cards and charts
+- [x] Testing, error states, accessibility, mobile polish, and hardening
 - [ ] Deployment docs, demo script, screenshots, and resume bullets
 
 ## Local Setup
@@ -89,6 +90,7 @@ The current local demo flow can show:
 9. Open `/admin/issues/[id]` to update status, write status history, post public updates, save private admin notes, and review notification attempts.
 10. Watch `/map` update public markers while the page is open, or use the refresh prompts on `/admin` and `/issues/[id]` after live changes.
 11. Trigger a skipped, sent, or failed notification record for high and critical reports.
+12. Check `/api/health` for basic app and public environment status.
 
 Later phases add final deployment polish and demo packaging.
 
@@ -162,6 +164,13 @@ The GitHub Actions workflow runs the same validation commands on push and pull r
 - Recharts visualizes status, category, and urgency counts in client-only chart components.
 - Recent activity comes from `issue_status_history` with issue title, status transition, actor, safe admin-visible note, and timestamp.
 - The landing page shows only public-safe aggregate counts for public, non-rejected issues.
+
+## Hardening Notes
+
+- `/api/health` returns basic JSON health and public environment readiness without exposing server-only secrets.
+- Global not-found, unauthorized, map error, and route loading states are present for major flows.
+- Form controls and buttons include visible keyboard focus styles.
+- The admin moderation queue has a mobile card fallback below desktop table widths.
 
 ## Screenshot Checklist
 

@@ -41,19 +41,19 @@ export default async function DashboardPage({
 
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           <DashboardAction
-            description="Open the protected report route. The actual issue form arrives in Phase 3."
+            description="Submit a validated civic report with map coordinates and an optional image."
             href="/issues/new"
             icon={<PlusCircle className="size-5" aria-hidden="true" />}
             title="Create report"
           />
           <DashboardAction
-            description="Public issue browsing remains available while data fetching arrives later."
+            description="Browse public reports with filters, status badges, pagination, and detail pages."
             href="/issues"
             icon={<ClipboardList className="size-5" aria-hidden="true" />}
             title="My reports"
           />
           <DashboardAction
-            description="Preview the public map shell before Leaflet is wired into the app."
+            description="Open the live public map with OpenStreetMap tiles, filters, and realtime marker updates."
             href="/map"
             icon={<Map className="size-5" aria-hidden="true" />}
             title="Public map"
