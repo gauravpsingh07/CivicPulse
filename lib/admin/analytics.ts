@@ -9,6 +9,7 @@ import {
   type AnalyticsCount,
   type AverageResolutionTime,
 } from "@/lib/analytics/calculations";
+import { toUserFacingQueryError } from "@/lib/supabase/errors";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Tables } from "@/lib/types/database";
 
@@ -150,7 +151,7 @@ export async function getAdminAnalyticsDashboard(): Promise<AdminAnalyticsDashbo
     return {
       ...emptyDashboard,
       recentActivity,
-      errorMessage: issuesResult.error.message,
+      errorMessage: toUserFacingQueryError(issuesResult.error),
     };
   }
 

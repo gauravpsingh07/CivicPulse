@@ -16,6 +16,8 @@ Live demo: https://civic-pulse-sandy.vercel.app
 
 GitHub repository: https://github.com/gauravpsingh07/CivicPulse
 
+Note: the demo database runs on Supabase's free tier, which pauses projects after ~7 days without activity. A scheduled GitHub Actions workflow (`.github/workflows/keep-alive.yml`) pings `/api/health` twice a week to keep it awake. If data still fails to load, the project can be restored in about a minute from the Supabase dashboard.
+
 ## Features
 
 - Email/password authentication with Supabase Auth.
@@ -31,7 +33,7 @@ GitHub repository: https://github.com/gauravpsingh07/CivicPulse
 - Server-side admin actions for status updates and comments.
 - Discord webhook alert workflow for high and critical issues.
 - Supabase Realtime refresh prompts for admin/detail pages and live marker updates for the public map.
-- Health route at `/api/health` that returns basic app/public-env readiness without exposing secrets.
+- Health route at `/api/health` that reports app/public-env readiness plus a live database connectivity probe (HTTP 503 when the database is unreachable) without exposing secrets.
 - Loading, empty, missing-env, unauthorized, and not-found states for major flows.
 - GitHub Actions CI for lint, typecheck, tests, and build.
 

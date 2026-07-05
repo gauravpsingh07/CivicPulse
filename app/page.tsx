@@ -94,10 +94,13 @@ const trustItems = [
 
 export default async function Home() {
   const publicStats = await getPublicIssueStats();
+  const statsUnavailable = Boolean(publicStats.errorMessage);
+  const formatStat = (value: number) =>
+    statsUnavailable ? "—" : value.toString();
   const heroStats = [
-    [publicStats.totalPublicIssues.toString(), "public issues"],
-    [publicStats.activeCount.toString(), "active reports"],
-    [publicStats.resolvedCount.toString(), "resolved/closed"],
+    [formatStat(publicStats.totalPublicIssues), "public issues"],
+    [formatStat(publicStats.activeCount), "active reports"],
+    [formatStat(publicStats.resolvedCount), "resolved/closed"],
   ];
 
   return (

@@ -5,6 +5,7 @@ import { calculateAverageResolutionTime } from "@/lib/analytics/calculations";
 import { requireAdmin } from "@/lib/auth/profile";
 import { getIssueImagePublicUrl } from "@/lib/images";
 import type { AdminIssueFilters } from "@/lib/admin/filters";
+import { toUserFacingQueryError } from "@/lib/supabase/errors";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Tables } from "@/lib/types/database";
 
@@ -84,7 +85,7 @@ export async function getAdminIssues(
       totalCount: 0,
       pageCount: 0,
       summary,
-      errorMessage: error.message,
+      errorMessage: toUserFacingQueryError(error),
     };
   }
 
@@ -117,7 +118,7 @@ export async function getAdminIssueById(
     .maybeSingle();
 
   if (error) {
-    throw new Error(error.message);
+    throw new Error(toUserFacingQueryError(error));
   }
 
   if (!issue) {

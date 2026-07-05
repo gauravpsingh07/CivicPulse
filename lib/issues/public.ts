@@ -9,6 +9,7 @@ import {
   PUBLIC_MAP_ISSUE_LIMIT,
   type PublicMapFilters,
 } from "@/lib/map/markers";
+import { toUserFacingQueryError } from "@/lib/supabase/errors";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Tables } from "@/lib/types/database";
 
@@ -110,7 +111,7 @@ export async function getPublicIssues(
       issues: [],
       totalCount: 0,
       pageCount: 0,
-      errorMessage: error.message,
+      errorMessage: toUserFacingQueryError(error),
     };
   }
 
@@ -165,7 +166,7 @@ export async function getPublicMapIssues(
     return {
       isConfigured: true,
       issues: [],
-      errorMessage: error.message,
+      errorMessage: toUserFacingQueryError(error),
     };
   }
 
@@ -203,7 +204,7 @@ export async function getPublicIssueStats(): Promise<PublicIssueStats> {
       totalPublicIssues: 0,
       activeCount: 0,
       resolvedCount: 0,
-      errorMessage: error.message,
+      errorMessage: toUserFacingQueryError(error),
     };
   }
 
@@ -246,7 +247,7 @@ export async function getIssueById(id: string): Promise<IssueDetailResult> {
   if (issueError) {
     return {
       status: "error",
-      message: issueError.message,
+      message: toUserFacingQueryError(issueError),
     };
   }
 
@@ -282,14 +283,14 @@ export async function getIssueById(id: string): Promise<IssueDetailResult> {
   if (timelineError) {
     return {
       status: "error",
-      message: timelineError.message,
+      message: toUserFacingQueryError(timelineError),
     };
   }
 
   if (commentsResult.error) {
     return {
       status: "error",
-      message: commentsResult.error.message,
+      message: toUserFacingQueryError(commentsResult.error),
     };
   }
 

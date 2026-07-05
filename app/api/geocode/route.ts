@@ -28,7 +28,8 @@ export async function GET(request: NextRequest) {
       headers: {
         Accept: "application/json",
         Referer: getAppUrl(),
-        "User-Agent": "CivicPulse/1.0 location-search (https://github.com/)",
+        "User-Agent":
+          "CivicPulse/1.0 location-search (https://github.com/gauravpsingh07/CivicPulse)",
       },
     });
 

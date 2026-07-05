@@ -1,0 +1,26 @@
+name: Keep Supabase awake
+
+# Supabase free-tier projects are paused after ~7 days without database
+# activity, which takes the live demo down. This workflow hits /api/health,
+# which runs a real query against Supabase, so the project registers activity.
+# Note: GitHub disables scheduled workflows after 60 days without repo
+# activity — an occasional commit or a manual "Run workflow" re-enables it.
+
+on:
+  schedule:
+    - cron: "23 7 * * 1,4" # 07:23 UTC every Monday and Thursday
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    name: Ping live health endpoint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Query /api/health and require a reachable database
+        run: |
+          response=$(curl -sS --max-time 30 https://civic-pulse-sandy.vercel.app/api/health)
+          echo "$response"
+          echo "$response" | grep -q '"database":"ok"'

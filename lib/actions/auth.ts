@@ -5,6 +5,7 @@ import { ensureProfileForUser } from "@/lib/auth/profile";
 import type { AuthActionState } from "@/lib/auth/action-state";
 import { getSafeNextPath } from "@/lib/auth/utils";
 import { getAppUrl } from "@/lib/supabase/env";
+import { toUserFacingQueryError } from "@/lib/supabase/errors";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { loginSchema, registerSchema } from "@/lib/validators/auth";
 
@@ -45,7 +46,9 @@ export async function signInAction(
   if (error || !data.user) {
     return {
       status: "error",
-      message: error?.message || "Unable to sign in with those credentials.",
+      message: error
+        ? toUserFacingQueryError(error)
+        : "Unable to sign in with those credentials.",
       email: parsed.data.email,
     };
   }
@@ -104,7 +107,9 @@ export async function signUpAction(
   if (error || !data.user) {
     return {
       status: "error",
-      message: error?.message || "Unable to create an account.",
+      message: error
+        ? toUserFacingQueryError(error)
+        : "Unable to create an account.",
       email: parsed.data.email,
       fullName: parsed.data.fullName,
     };
