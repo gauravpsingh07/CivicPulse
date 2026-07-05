@@ -40,6 +40,12 @@ export async function SiteHeader() {
           >
             Map
           </Link>
+          <Link
+            className={buttonVariants({ variant: "ghost", size: "sm" })}
+            href="/stats"
+          >
+            Stats
+          </Link>
           {user ? (
             <>
               <Link

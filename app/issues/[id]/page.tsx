@@ -10,6 +10,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { CommentList } from "@/components/issues/comment-list";
+import { UpvoteButton } from "@/components/issues/upvote-button";
 import { RealtimeRefreshPrompt } from "@/components/realtime/realtime-refresh-prompt";
 import {
   IssueStatusBadge,
@@ -48,7 +49,14 @@ export default async function IssueDetailPage({
     );
   }
 
-  const { comments, issue, timeline, canViewPrivateComments } = result.detail;
+  const {
+    comments,
+    issue,
+    timeline,
+    canViewPrivateComments,
+    isSignedIn,
+    hasUpvoted,
+  } = result.detail;
 
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-[var(--background)] px-5 py-10 sm:px-8">
@@ -126,6 +134,20 @@ export default async function IssueDetailPage({
           </div>
 
           <aside className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Community support</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <UpvoteButton
+                  initialCount={issue.upvote_count ?? 0}
+                  initiallyUpvoted={hasUpvoted}
+                  isSignedIn={isSignedIn}
+                  issueId={issue.id}
+                />
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle>Issue details</CardTitle>

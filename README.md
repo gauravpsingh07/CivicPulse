@@ -25,7 +25,12 @@ Note: the demo database runs on Supabase's free tier, which pauses projects afte
 - Zod validation for auth, issue fields, filters, coordinates, and images.
 - Address, landmark, street, city, or ZIP search helper that recenters the map before the user clicks the exact issue location.
 - Optional issue image upload to Supabase Storage with JPEG, PNG, WebP, and 2 MB limits.
-- Public issue list with status, category, urgency, date sort, and pagination.
+- Public issue list with full-text search (PostgreSQL tsvector + GIN), status, category, urgency, date sort, and pagination.
+- "Issues near me": browser geolocation plus a SECURITY INVOKER SQL function that returns public issues ordered by haversine distance, with distance chips on the cards.
+- Community upvotes ("I'm also affected"): one vote per user enforced by RLS, counts denormalized onto issues by a trigger and shown on cards, detail pages, and map popups.
+- Duplicate prevention: the submission form suggests existing reports within 400 m in the same category so residents can upvote instead of re-filing.
+- Public map with marker clustering (supercluster) and an urgency-weighted heatmap toggle (leaflet.heat).
+- Public `/stats` page with monthly submission trends, status/category/urgency breakdowns, and average resolution time.
 - Public issue detail pages with image, status timeline, public comments, metadata, and Leaflet map preview.
 - Public `/map` with Leaflet, OpenStreetMap attribution, filters, marker popups, marker styling, stats, and scoped Realtime updates.
 - Server-protected `/admin` dashboard with moderation queue, filters, pagination, analytics cards, Recharts visualizations, and recent activity.
@@ -64,7 +69,8 @@ Core routes:
 - `/issues` - public issue list.
 - `/issues/[id]` - public issue detail with visibility checks.
 - `/issues/new` - authenticated issue submission.
-- `/map` - public issue map.
+- `/map` - public issue map with clustering and heatmap views.
+- `/stats` - public analytics computed from public reports only.
 - `/admin` - server-protected admin dashboard.
 - `/admin/issues/[id]` - server-protected moderation page.
 - `/api/health` - basic JSON health check.
@@ -77,6 +83,7 @@ SQL migrations live in `supabase/migrations` and should be run in order.
 - `issues` - civic reports with reporter, title, description, category, urgency, status, coordinates, optional address label, optional image path, public visibility, timestamps, and resolution timestamp.
 - `issue_status_history` - status transitions with `from_status`, `to_status`, changed-by user, optional note, and timestamp.
 - `issue_comments` - public updates and private admin notes.
+- `issue_upvotes` - one row per user per issue; counts are denormalized to `issues.upvote_count` by trigger, and vote rows are readable only by their owner.
 - `notifications` - Discord alert attempts with channel, event type, status, error message, and sent timestamp.
 
 ## Security and RLS
@@ -126,7 +133,7 @@ Detailed setup is in [docs/deployment.md](docs/deployment.md) and [docs/supabase
 Short version:
 
 1. Create a Supabase project.
-2. Run migrations `001` through `005` from `supabase/migrations`.
+2. Run migrations `001` through `007` from `supabase/migrations`.
 3. Create the `issue-images` bucket.
 4. Configure storage policies for authenticated user uploads.
 5. Enable email/password Auth and callback URLs.

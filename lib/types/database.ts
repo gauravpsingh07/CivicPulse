@@ -50,6 +50,8 @@ export type Database = {
           created_at: string;
           updated_at: string;
           resolved_at: string | null;
+          search_tsv: string | null;
+          upvote_count: number;
         };
         Insert: {
           id?: string;
@@ -177,6 +179,37 @@ export type Database = {
           },
         ];
       };
+      issue_upvotes: {
+        Row: {
+          issue_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          issue_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: {
+          issue_id?: string;
+          user_id?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "issue_upvotes_issue_id_fkey";
+            columns: ["issue_id"];
+            referencedRelation: "issues";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "issue_upvotes_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       notifications: {
         Row: {
           id: string;
@@ -223,6 +256,24 @@ export type Database = {
       current_user_is_admin: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
+      };
+      nearby_public_issues: {
+        Args: {
+          origin_lat: number;
+          origin_lng: number;
+          search_text?: string | null;
+          filter_status?: Database["public"]["Enums"]["issue_status"] | null;
+          filter_category?:
+            | Database["public"]["Enums"]["issue_category"]
+            | null;
+          filter_urgency?: Database["public"]["Enums"]["issue_urgency"] | null;
+          max_results?: number;
+        };
+        Returns: Array<
+          Omit<Database["public"]["Tables"]["issues"]["Row"], "search_tsv"> & {
+            distance_meters: number;
+          }
+        >;
       };
     };
     Enums: {

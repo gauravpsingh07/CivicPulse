@@ -18,6 +18,7 @@ import {
 } from "@/lib/images";
 import { initialCreateIssueActionState } from "@/lib/issues/action-state";
 import { AuthErrorMessage } from "@/components/auth/auth-error-message";
+import { NearbyDuplicates } from "@/components/issues/nearby-duplicates";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -47,6 +48,9 @@ export function IssueForm() {
   });
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [imageMessage, setImageMessage] = useState<string | null>(null);
+  const [category, setCategory] = useState<string>(
+    ISSUE_CATEGORIES[0].value,
+  );
 
   useEffect(() => {
     return () => {
@@ -112,10 +116,15 @@ export function IssueForm() {
 
             <label className="block space-y-2">
               <span className="text-sm font-semibold">Category</span>
-              <Select name="category" required>
-                {ISSUE_CATEGORIES.map((category) => (
-                  <option key={category.value} value={category.value}>
-                    {category.label}
+              <Select
+                name="category"
+                onChange={(event) => setCategory(event.target.value)}
+                required
+                value={category}
+              >
+                {ISSUE_CATEGORIES.map((categoryOption) => (
+                  <option key={categoryOption.value} value={categoryOption.value}>
+                    {categoryOption.label}
                   </option>
                 ))}
               </Select>
@@ -150,6 +159,11 @@ export function IssueForm() {
               </p>
             </div>
             <MapPicker value={coordinates} onChange={setCoordinates} />
+            <NearbyDuplicates
+              category={category}
+              latitude={coordinates.latitude}
+              longitude={coordinates.longitude}
+            />
             <div className="grid gap-5 md:grid-cols-2">
               <label className="block space-y-2">
                 <span className="text-sm font-semibold">Latitude</span>

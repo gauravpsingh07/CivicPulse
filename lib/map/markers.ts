@@ -42,6 +42,7 @@ export type PublicMapIssueMarker = {
   longitude: number;
   address_label: string | null;
   created_at: string;
+  upvote_count?: number;
 };
 
 export type IssueMarkerStyle = {

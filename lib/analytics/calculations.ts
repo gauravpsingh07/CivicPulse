@@ -109,6 +109,73 @@ export function formatAverageResolutionTime(hours: number | null) {
   return `${days} day${days === 1 ? "" : "s"}`;
 }
 
+export type MonthlyCount = {
+  key: string;
+  label: string;
+  count: number;
+};
+
+const MONTH_LABELS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+export function calculateMonthlySubmissionCounts(
+  issues: ReadonlyArray<{ created_at: string | null }>,
+  monthCount = 6,
+  now = new Date(),
+): MonthlyCount[] {
+  const buckets: MonthlyCount[] = [];
+  const countsByKey = new Map<string, number>();
+
+  for (let offset = monthCount - 1; offset >= 0; offset -= 1) {
+    const month = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - offset, 1),
+    );
+    const key = `${month.getUTCFullYear()}-${String(month.getUTCMonth() + 1).padStart(2, "0")}`;
+
+    countsByKey.set(key, 0);
+    buckets.push({
+      key,
+      label: `${MONTH_LABELS[month.getUTCMonth()]} ${month.getUTCFullYear()}`,
+      count: 0,
+    });
+  }
+
+  for (const issue of issues) {
+    if (!issue.created_at) {
+      continue;
+    }
+
+    const created = new Date(issue.created_at);
+
+    if (Number.isNaN(created.getTime())) {
+      continue;
+    }
+
+    const key = `${created.getUTCFullYear()}-${String(created.getUTCMonth() + 1).padStart(2, "0")}`;
+
+    if (countsByKey.has(key)) {
+      countsByKey.set(key, (countsByKey.get(key) ?? 0) + 1);
+    }
+  }
+
+  return buckets.map((bucket) => ({
+    ...bucket,
+    count: countsByKey.get(bucket.key) ?? 0,
+  }));
+}
+
 export function getPublicSafeIssueStats(
   issues: ReadonlyArray<{ status: IssueStatus }>,
 ) {

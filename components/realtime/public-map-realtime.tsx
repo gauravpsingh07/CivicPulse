@@ -186,6 +186,7 @@ function toIssueMarker(row: Record<string, unknown>) {
     longitude,
     address_label: getString(row.address_label),
     created_at: createdAt,
+    upvote_count: getNumber(row.upvote_count) ?? 0,
     is_public: row.is_public !== false,
   } as PublicMapIssueMarker & { is_public?: boolean };
 }

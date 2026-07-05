@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { CalendarDays, MapPin } from "lucide-react";
+import { CalendarDays, MapPin, Navigation, ThumbsUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -8,10 +8,23 @@ import {
   IssueUrgencyBadge,
 } from "@/components/issues/issue-status-badge";
 import { formatDateOnly } from "@/lib/dates";
+import { formatDistanceLabel } from "@/lib/geo";
 import { getIssueCategoryLabel } from "@/lib/issues/status";
 import type { PublicIssue } from "@/lib/issues/public";
 
-export function IssueCard({ issue }: { issue: PublicIssue }) {
+export function IssueCard({
+  issue,
+  distanceMeters,
+}: {
+  issue: PublicIssue;
+  distanceMeters?: number;
+}) {
+  const distanceLabel =
+    typeof distanceMeters === "number"
+      ? formatDistanceLabel(distanceMeters)
+      : null;
+  const upvoteCount = issue.upvote_count ?? 0;
+
   return (
     <Card className="overflow-hidden">
       {issue.image_url ? (
@@ -31,6 +44,18 @@ export function IssueCard({ issue }: { issue: PublicIssue }) {
           <Badge variant="neutral">
             {getIssueCategoryLabel(issue.category)}
           </Badge>
+          {upvoteCount > 0 ? (
+            <Badge variant="success">
+              <ThumbsUp className="mr-1 size-3" aria-hidden="true" />
+              {upvoteCount}
+            </Badge>
+          ) : null}
+          {distanceLabel ? (
+            <Badge variant="default">
+              <Navigation className="mr-1 size-3" aria-hidden="true" />
+              {distanceLabel}
+            </Badge>
+          ) : null}
         </div>
         <CardTitle className="mt-4 text-xl">
           <Link

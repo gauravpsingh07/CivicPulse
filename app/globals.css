@@ -54,6 +54,25 @@ select {
   background: rgba(31, 138, 91, 0.18);
 }
 
+.cluster-marker {
+  background: transparent;
+  border: none;
+}
+
+.cluster-badge {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  background: rgba(18, 99, 63, 0.92);
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 6px 16px rgba(23, 33, 26, 0.28);
+}
+
 :focus-visible {
   outline: 3px solid rgba(52, 120, 168, 0.46);
   outline-offset: 3px;

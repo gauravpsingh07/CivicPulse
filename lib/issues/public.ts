@@ -1,6 +1,16 @@
 import "server-only";
 
-import { getPublicSafeIssueStats } from "@/lib/analytics/calculations";
+import {
+  calculateIssueCategoryCounts,
+  calculateIssueStatusCounts,
+  calculateMonthlySubmissionCounts,
+  calculateUrgencyCounts,
+  calculateAverageResolutionTime,
+  getPublicSafeIssueStats,
+  type AnalyticsCount,
+  type AverageResolutionTime,
+  type MonthlyCount,
+} from "@/lib/analytics/calculations";
 import { isAdminProfile } from "@/lib/auth/utils";
 import { getIssueImagePublicUrl } from "@/lib/images";
 import type { PublicIssueFilters } from "@/lib/issues/filters";
@@ -17,11 +27,17 @@ export type PublicIssue = Tables<"issues"> & {
   image_url: string | null;
 };
 
+export type NearbyPublicIssue = PublicIssue & {
+  distance_meters: number;
+};
+
 export type PublicIssueDetail = {
   issue: PublicIssue;
   timeline: Tables<"issue_status_history">[];
   comments: Tables<"issue_comments">[];
   canViewPrivateComments: boolean;
+  isSignedIn: boolean;
+  hasUpvoted: boolean;
 };
 
 export type PublicIssuesResult = {
@@ -101,6 +117,13 @@ export async function getPublicIssues(
     query = query.eq("urgency", filters.urgency);
   }
 
+  if (filters.search) {
+    query = query.textSearch("search_tsv", filters.search, {
+      type: "websearch",
+      config: "english",
+    });
+  }
+
   const { data, error, count } = await query
     .order("created_at", { ascending: filters.sort === "oldest" })
     .range(from, to);
@@ -176,6 +199,124 @@ export async function getPublicMapIssues(
     errorMessage: null,
   };
 }
+
+export type NearbyPublicIssuesResult = {
+  isConfigured: boolean;
+  issues: NearbyPublicIssue[];
+  errorMessage: string | null;
+};
+
+export const NEARBY_ISSUES_LIMIT = 50;
+
+export async function getNearbyPublicIssues(
+  filters: PublicIssueFilters & { near: NonNullable<PublicIssueFilters["near"]> },
+): Promise<NearbyPublicIssuesResult> {
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return {
+      isConfigured: false,
+      issues: [],
+      errorMessage:
+        "Supabase is not configured yet. Add the public URL and anon key to browse live issues.",
+    };
+  }
+
+  const { data, error } = await supabase.rpc("nearby_public_issues", {
+    origin_lat: filters.near.latitude,
+    origin_lng: filters.near.longitude,
+    search_text: filters.search ?? null,
+    filter_status: filters.status ?? null,
+    filter_category: filters.category ?? null,
+    filter_urgency: filters.urgency ?? null,
+    max_results: NEARBY_ISSUES_LIMIT,
+  });
+
+  if (error) {
+    return {
+      isConfigured: true,
+      issues: [],
+      errorMessage: toUserFacingQueryError(error),
+    };
+  }
+
+  return {
+    isConfigured: true,
+    issues: (data ?? []).map((row) => ({
+      ...row,
+      search_tsv: null,
+      image_url: getIssueImagePublicUrl(row.image_path),
+    })),
+    errorMessage: null,
+  };
+}
+
+export type PublicAnalyticsResult = {
+  isConfigured: boolean;
+  totalPublicIssues: number;
+  statusCounts: AnalyticsCount[];
+  categoryCounts: AnalyticsCount[];
+  urgencyCounts: AnalyticsCount[];
+  monthlyCounts: MonthlyCount[];
+  averageResolutionTime: AverageResolutionTime;
+  errorMessage: string | null;
+};
+
+export async function getPublicAnalytics(): Promise<PublicAnalyticsResult> {
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return {
+      ...emptyPublicAnalytics,
+      errorMessage:
+        "Supabase is not configured yet. Public statistics will appear after setup.",
+    };
+  }
+
+  const { data, error } = await supabase
+    .from("issues")
+    .select("status,category,urgency,created_at,resolved_at")
+    .eq("is_public", true)
+    .neq("status", "rejected")
+    .limit(1000);
+
+  if (error) {
+    return {
+      ...emptyPublicAnalytics,
+      errorMessage: toUserFacingQueryError(error),
+    };
+  }
+
+  const issues = data ?? [];
+
+  return {
+    isConfigured: true,
+    totalPublicIssues: issues.length,
+    statusCounts: calculateIssueStatusCounts(issues).filter(
+      (item) => item.key !== "rejected",
+    ),
+    categoryCounts: calculateIssueCategoryCounts(issues),
+    urgencyCounts: calculateUrgencyCounts(issues),
+    monthlyCounts: calculateMonthlySubmissionCounts(issues),
+    averageResolutionTime: calculateAverageResolutionTime(issues),
+    errorMessage: null,
+  };
+}
+
+const emptyPublicAnalytics: PublicAnalyticsResult = {
+  isConfigured: false,
+  totalPublicIssues: 0,
+  statusCounts: [],
+  categoryCounts: [],
+  urgencyCounts: [],
+  monthlyCounts: [],
+  averageResolutionTime: {
+    averageHours: null,
+    issueCount: 0,
+    label: "No resolved issues",
+  },
+  errorMessage: null,
+};
 
 export async function getPublicIssueStats(): Promise<PublicIssueStats> {
   const supabase = await createSupabaseServerClient();
@@ -270,7 +411,7 @@ export async function getIssueById(id: string): Promise<IssueDetailResult> {
     };
   }
 
-  const [{ data: timeline, error: timelineError }, commentsResult] =
+  const [{ data: timeline, error: timelineError }, commentsResult, upvoteRow] =
     await Promise.all([
       supabase
         .from("issue_status_history")
@@ -278,6 +419,14 @@ export async function getIssueById(id: string): Promise<IssueDetailResult> {
         .eq("issue_id", issue.id)
         .order("created_at", { ascending: true }),
       buildCommentsQuery(supabase, issue.id, isAdmin),
+      user
+        ? supabase
+            .from("issue_upvotes")
+            .select("issue_id")
+            .eq("issue_id", issue.id)
+            .eq("user_id", user.id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
     ]);
 
   if (timelineError) {
@@ -301,6 +450,8 @@ export async function getIssueById(id: string): Promise<IssueDetailResult> {
       timeline: timeline ?? [],
       comments: commentsResult.data ?? [],
       canViewPrivateComments: isAdmin,
+      isSignedIn: Boolean(user),
+      hasUpvoted: Boolean(upvoteRow.data),
     },
   };
 }
