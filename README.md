@@ -8,7 +8,7 @@ Local issue reporting is often scattered across phone calls, one-off forms, and 
 
 ## Solution
 
-CivicPulse lets authenticated users submit public civic reports with a title, description, category, urgency, optional image, and map-selected latitude/longitude. Public visitors can browse visible issues on a list and map. Admins can moderate every issue, update status, add public updates or private notes, view notification logs, and monitor analytics.
+CivicPulse lets authenticated users submit public civic reports with a title, description, category, urgency, optional image, and map-selected latitude/longitude. Public visitors can search reports full-text, browse them on a clustered map or heatmap, sort by distance from their own location, and follow community statistics. Residents confirm reports that affect them with one-per-user upvotes, and the submission form suggests nearby existing reports to prevent duplicates. Admins moderate every issue, update status, add public updates or private notes, view notification logs, and monitor analytics.
 
 ## Live Demo
 
@@ -50,7 +50,9 @@ Note: the demo database runs on Supabase's free tier, which pauses projects afte
 - **Auth:** Supabase Auth
 - **Storage:** Supabase Storage
 - **Realtime:** Supabase Realtime
-- **Maps:** Leaflet, react-leaflet, OpenStreetMap tiles
+- **Maps:** Leaflet, react-leaflet, OpenStreetMap tiles, supercluster (marker clustering), leaflet.heat (heatmap)
+- **Search:** PostgreSQL full-text search (generated tsvector column + GIN index, websearch queries)
+- **Geospatial:** haversine distance ranking in a SECURITY INVOKER SQL function
 - **Validation:** Zod
 - **Charts:** Recharts
 - **Testing:** Vitest, React Testing Library, jsdom
@@ -73,18 +75,21 @@ Core routes:
 - `/stats` - public analytics computed from public reports only.
 - `/admin` - server-protected admin dashboard.
 - `/admin/issues/[id]` - server-protected moderation page.
-- `/api/health` - basic JSON health check.
+- `/api/health` - JSON health check including a live database connectivity probe.
+- `/api/issues/nearby` - public JSON endpoint returning nearby reports for duplicate suggestions.
 
 ## Database Schema Summary
 
 SQL migrations live in `supabase/migrations` and should be run in order.
 
 - `profiles` - user profile and role (`user` or `admin`).
-- `issues` - civic reports with reporter, title, description, category, urgency, status, coordinates, optional address label, optional image path, public visibility, timestamps, and resolution timestamp.
+- `issues` - civic reports with reporter, title, description, category, urgency, status, coordinates, optional address label, optional image path, public visibility, timestamps, resolution timestamp, a generated `search_tsv` column for full-text search, and a trigger-maintained `upvote_count`.
 - `issue_status_history` - status transitions with `from_status`, `to_status`, changed-by user, optional note, and timestamp.
 - `issue_comments` - public updates and private admin notes.
 - `issue_upvotes` - one row per user per issue; counts are denormalized to `issues.upvote_count` by trigger, and vote rows are readable only by their owner.
 - `notifications` - Discord alert attempts with channel, event type, status, error message, and sent timestamp.
+
+Database functions: `current_user_is_admin()` backs the RLS policies, and `nearby_public_issues(lat, lng, ...)` returns public issues ordered by haversine distance with optional full-text and enum filters. It is SECURITY INVOKER, so the caller's row-level security still applies.
 
 ## Security and RLS
 
@@ -94,6 +99,9 @@ SQL migrations live in `supabase/migrations` and should be run in order.
 - Admin pages call server-side `requireAdmin`, which verifies `profiles.role = admin`.
 - Admin mutations re-check admin role server-side before changing status or writing notes.
 - Issue creation requires an authenticated user and inserts `reporter_id = auth.uid()`.
+- Upvotes are limited to one per user per public issue by primary key plus RLS; vote rows are readable only by their owner, so who voted stays private while the aggregate count is public.
+- `issues.upvote_count` can only be changed by the recount trigger or admins - a field-guard trigger rejects direct client writes.
+- The nearby-issues SQL function runs as SECURITY INVOKER so anonymous callers only ever see rows their RLS policies allow.
 - Browser/client code never uses the Supabase service-role key or Discord webhook URL.
 - Realtime subscriptions are page-scoped and do not subscribe globally.
 
@@ -161,7 +169,7 @@ In Supabase, open Database > Publications and enable Realtime for:
 
 The app uses Realtime only on selected pages:
 
-- `/map` updates public markers while mounted.
+- `/map` updates public markers while mounted; because upvote counts live on the `issues` row, votes also update map popups live.
 - `/admin` shows a refresh prompt for issue changes.
 - `/issues/[id]` and `/admin/issues/[id]` show refresh prompts for selected issue changes.
 
@@ -185,15 +193,16 @@ Production deployment: https://civic-pulse-sandy.vercel.app
 Detailed script: [docs/demo-script.md](docs/demo-script.md).
 
 1. Open the landing page.
-2. Register or log in.
-3. Create an issue with map location and optional image.
-4. View the issue detail page.
-5. Browse the public issue list.
-6. Open the public map.
-7. Sign in as an admin and update status.
-8. Observe map updates or refresh prompts from Realtime.
-9. Submit a high-priority issue and confirm Discord notification behavior.
-10. Review admin analytics.
+2. Search the issue list full-text (for example "pothole"), then click "Issues near me" to sort by distance with distance chips.
+3. Open the public map, click a cluster to zoom in, and toggle the heatmap view.
+4. Review the public `/stats` page: monthly trend, category and urgency mix, resolution time.
+5. Register or log in.
+6. Create an issue with map location and optional image - notice the nearby-duplicate suggestions after picking a location.
+7. Open an issue detail page and click "I'm also affected" to upvote; watch the count on the map popup update live.
+8. Sign in as an admin and update status.
+9. Observe map updates or refresh prompts from Realtime.
+10. Submit a high-priority issue and confirm Discord notification behavior.
+11. Review admin analytics.
 
 ## Screenshots
 
@@ -212,12 +221,13 @@ npm run build
 
 GitHub Actions runs the same validation commands on push and pull request. The workflow uses `npm ci`, project scripts, and no paid external services.
 
-Current test coverage includes validators, auth helpers, image validation, filter parsing, status helpers, map marker helpers, realtime merge helpers, analytics calculations, Discord payload helpers, the health route, and core UI rendering.
+Current test coverage includes validators, auth helpers, image validation, filter parsing (including search and near-me coordinates), status helpers, map marker helpers, realtime merge helpers, analytics calculations and monthly trend bucketing, geo helpers (haversine distance, distance labels, coordinate parsing), Supabase error translation, Discord payload helpers, the health route with its database probe, and core UI rendering.
 
 ## Future Improvements
 
 - User dashboard for viewing a reporter's own submitted issues.
 - Optional private storage bucket with signed image URLs.
-- Marker clustering for larger public datasets.
-- Richer analytics by neighborhood/date range once enough data exists.
+- Dynamic Open Graph share cards for issue links.
+- Neighborhood-level analytics and date-range filters once enough data exists.
+- Email notifications for status changes on issues a resident upvoted.
 - Additional notification adapters if a future deployment has approved infrastructure.
