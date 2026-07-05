@@ -4,10 +4,8 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { ThumbsUp } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
-import {
-  initialUpvoteActionState,
-  toggleIssueUpvoteAction,
-} from "@/lib/actions/upvotes";
+import { toggleIssueUpvoteAction } from "@/lib/actions/upvotes";
+import { initialUpvoteActionState } from "@/lib/issues/upvote-action-state";
 
 export function UpvoteButton({
   issueId,

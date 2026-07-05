@@ -2,20 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import type { UpvoteActionState } from "@/lib/issues/upvote-action-state";
 import { toUserFacingQueryError } from "@/lib/supabase/errors";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-
-export type UpvoteActionState = {
-  status: "idle" | "success" | "auth_required" | "error";
-  upvoted: boolean;
-  message: string | null;
-};
-
-export const initialUpvoteActionState: UpvoteActionState = {
-  status: "idle",
-  upvoted: false,
-  message: null,
-};
 
 export async function toggleIssueUpvoteAction(
   _previousState: UpvoteActionState,
